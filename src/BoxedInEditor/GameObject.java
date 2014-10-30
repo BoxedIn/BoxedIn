@@ -9,12 +9,13 @@ package BoxedInEditor;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
+import java.io.Serializable;
 
 /**
  *
  * @author jds5782
  */
-public class GameObject {
+public class GameObject implements Serializable{
     private Image gOImage;
     private int width, height;
     private Point location;
