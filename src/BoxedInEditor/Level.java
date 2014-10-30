@@ -7,20 +7,24 @@
 package BoxedInEditor;
 
 import java.awt.Point;
+import java.io.Serializable;
 
 /**
  *
  * @author jds5782
  */
-public class Level {
+public class Level implements Serializable{
+    // for opening a Level
+    static java.util.logging.Level SEVERE;
+    
     private GameObject go[][];
     private int spotsTaken[][];
-    private int gridW, gridH;
+    private int gridW, gridH;       // number of blocks in width/height
     public static int boxPixelWidth, boxPixelHeight;
     
-    public Level(int gridW, int gridH){
-        this.gridW = gridW;
-        this.gridH = gridH;
+    public Level(int gridWidth, int gridHeight){
+        gridW = gridWidth; // subtract 1 to account for zero indexed array
+        gridH = gridHeight;  // subtract 1 to account for zero indexed array
         go = new GameObject[gridW][gridH];
         spotsTaken = new int[gridW][gridH];
         initSpotsTaken();
@@ -45,10 +49,12 @@ public class Level {
     }
     
     public void addGameObject(GameObject go){
+        if(go.getLocation().x < gridW && go.getLocation().y < gridH){
            if(spotsTaken[go.getLocation().x][go.getLocation().y] == 0){     // check that no other objects occupy that point
                this.go[go.getLocation().x][go.getLocation().y] = go;    // set this spot in the object array to object passed in
                this.spotsTaken[go.getLocation().x][go.getLocation().y] = 1;     // could possibly equal some other int to represent another type of object
            }
+        }
     }
     public void removeGameObject(Point p){
 
