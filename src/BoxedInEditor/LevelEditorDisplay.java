@@ -16,26 +16,27 @@ import javax.swing.JPanel;
  * @author azh5442
  */
 public class LevelEditorDisplay extends javax.swing.JFrame {
+    private GameComposer gc;
     private JPanel editorPanel;
     private Graphics editorGraphics;
     private final int NUM_OF_BLOCKS;
     private int gridSpacing;
     Image currentImage;
-    Level level;
 
     /**
      * Creates new form LevelEditorDisplay
      */
     public LevelEditorDisplay() {
         initComponents();       // init frame componenets
+        gc = new GameComposer();
         editorPanel = jPanel4;
         editorGraphics = jPanel4.getGraphics();
         GameObject.levelGraphics = editorGraphics;
         NUM_OF_BLOCKS = 20;
         gridSpacing = editorPanel.getWidth() / NUM_OF_BLOCKS;  // divide display panel in to 20 x 20 grid
-        Level.boxPixelHeight = gridSpacing; // setting static variable in Level
-        Level.boxPixelWidth = gridSpacing;
-        level = new Level(gridSpacing, gridSpacing);
+        gc.level.boxPixelHeight = gridSpacing; // setting static variable in Level
+        gc.level.boxPixelWidth = gridSpacing;
+        gc.level = new Level(NUM_OF_BLOCKS, NUM_OF_BLOCKS);
         // must initialize a default image. also set cursor to box
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         currentImage = toolkit.getImage("box.gif");
@@ -47,7 +48,7 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
     public void paint(Graphics g){
         super.paint(g);
         drawGrid();
-        level.drawObjects();
+        gc.level.drawObjects();
     }
     
 //    private void initializeImages(){
@@ -60,7 +61,7 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
     private void drawGrid(){
         int width = editorPanel.getWidth();
         int height = editorPanel.getHeight();
-        for(int i = 0; i <= 20; i++){
+        for(int i = 0; i <= NUM_OF_BLOCKS; i++){
             editorGraphics.drawLine(i*gridSpacing, 0, i*gridSpacing, gridSpacing*NUM_OF_BLOCKS);   // vertical lines
             editorGraphics.drawLine(0, i*gridSpacing, gridSpacing*NUM_OF_BLOCKS, i*gridSpacing); // horizontal lines
         }
@@ -126,10 +127,20 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
 
         jButton2.setIcon(new javax.swing.ImageIcon("P:\\SWENG_411\\FinalProject\\open_file.png")); // NOI18N
         jButton2.setPreferredSize(new java.awt.Dimension(50, 63));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         jPanel1.add(jButton2);
 
         jButton4.setIcon(new javax.swing.ImageIcon("P:\\SWENG_411\\FinalProject\\save.png")); // NOI18N
         jButton4.setPreferredSize(new java.awt.Dimension(50, 63));
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
         jPanel1.add(jButton4);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_START);
@@ -185,7 +196,7 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 471, Short.MAX_VALUE)
+            .addGap(0, 469, Short.MAX_VALUE)
         );
 
         jPanel2.add(jPanel4);
@@ -270,9 +281,29 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
         // user clicks inside editorPanel        
         Point p = snapToGrid(evt.getX(), evt.getY());
         GameObject go = new GameObject(p, currentImage);
-        level.addGameObject(go);
-        level.drawObjects();
+        gc.level.addGameObject(go);
+        gc.level.drawObjects();
     }                                    
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // toolbar save button
+        try {
+            gc.saveLevel();
+        } catch (IOException ex) {
+            Logger.getLogger(LevelEditorDisplay.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }        
+    }                                        
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // toolbar open button
+        try {
+            gc.openLevel();
+        } catch (IOException ex) {
+            Logger.getLogger(LevelEditorDisplay.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(LevelEditorDisplay.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+    }                                        
 
     private Point snapToGrid(int x, int y){
         int closestX = x / gridSpacing;
