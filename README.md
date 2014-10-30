@@ -1,8 +1,3 @@
 BoxedIn
 =======
-
-BoxedIn Work
-
-hahahahaha
-
-this is git hub
+Boxed In Project SWENG 411
