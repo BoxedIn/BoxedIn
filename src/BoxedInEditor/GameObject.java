@@ -23,17 +23,14 @@ public class GameObject {
     
     public GameObject(Point p, Image i){
         this.gOImage = i;
-        this.location = new Point(p.x, p.y); 
-        
+        this.location = p;
     }
     
-    public void drawObject(){
-        this.location.getX();
-        this.location.getY();
+    public void draw(){
         int x = this.location.x*Level.boxPixelWidth;
         int y = this.location.y*Level.boxPixelHeight;
+//        gOImage = gOImage.getScaledInstance(Level.boxPixelWidth, Level.boxPixelHeight, Image.SCALE_DEFAULT);
         levelGraphics.drawImage(gOImage, x, y, null);
-        
     }
     /**
      * @return the i
