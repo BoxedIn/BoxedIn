@@ -25,8 +25,6 @@ public class TriangleObject extends GameObject{
         public void draw(){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            System.out.println("drawing");
-            //gOImage = gOImage.getScaledInstance(Level.boxPixelWidth, Level.boxPixelHeight, Image.SCALE_DEFAULT);
             levelGraphics.drawImage(gOImage, x, y, null);
         }  
     
