@@ -6,6 +6,7 @@
 
 package BoxedInEditor;
 
+import java.awt.Graphics;
 import java.awt.Point;
 import java.io.Serializable;
 
@@ -71,5 +72,9 @@ public class Level implements Serializable{
 
          }
          return true;
+    }
+    
+    public GameObject[][] getGameObject(){
+        return this.go;
     }
 }
