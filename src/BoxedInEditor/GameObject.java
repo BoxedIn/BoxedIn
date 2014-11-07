@@ -15,38 +15,13 @@ import java.io.Serializable;
  *
  * @author jds5782
  */
-public class GameObject implements Serializable{
-    private Image gOImage;
+public abstract class GameObject implements Serializable{
     private int width, height;
-    private Point location;
+    protected Point location;
     public static Graphics levelGraphics;
     
+    public abstract void draw();
     
-    public GameObject(Point p, Image i){
-        this.gOImage = i;
-        this.location = p;
-    }
-    
-    public void draw(){
-        int x = this.location.x*Level.boxPixelWidth;
-        int y = this.location.y*Level.boxPixelHeight;
-//        gOImage = gOImage.getScaledInstance(Level.boxPixelWidth, Level.boxPixelHeight, Image.SCALE_DEFAULT);
-        levelGraphics.drawImage(gOImage, x, y, null);
-    }
-    /**
-     * @return the i
-     */
-    public Image getGameObjectImage() {
-        return gOImage;
-    }
-
-    /**
-     * @param i the i to set
-     */
-    public void set(Image i) {
-        this.gOImage = i;
-    }
-
     /**
      * @return the width
      */
