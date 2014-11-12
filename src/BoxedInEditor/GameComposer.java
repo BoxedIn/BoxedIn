@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -36,7 +37,8 @@ public class GameComposer {
     Image square = toolkit.getImage("box.gif");
     Image triangle = toolkit.getImage("triangle.gif");
     Image circle  = toolkit.getImage("circle.gif");
-    
+    LinkedList <Command> undoCom = new LinkedList();
+    LinkedList <Command>  doCom = new LinkedList();
     public GameComposer(){
         editorDisplay = new LevelEditorDisplay(this);
         editorDisplay.setVisible(true);
@@ -60,12 +62,12 @@ public class GameComposer {
     }
     
     // this method may be used to dynamically add buttons to the toolbar in the editor
-    private void createButton(){
-        JButton b = new JButton();
-        b.setText("Circle");
-        b.setPreferredSize(new java.awt.Dimension(70, 23));
-        editorDisplay.addButton(b);
-    }
+//    private void createButton(){
+//        JButton b = new JButton();
+//        b.setText("Circle");
+//        b.setPreferredSize(new java.awt.Dimension(70, 23));
+//        editorDisplay.addButton(b);
+//    }
     
     public void addNewObject(int num, Point p){
         GameObject o = null;
@@ -80,7 +82,10 @@ public class GameComposer {
                     break;
         }
         if(o != null){
-            level.addGameObject(o);}
+            level.addGameObject(o);
+            AddCommand a = new AddCommand(num, o.getLocation());
+            undoCom.push(a);
+        }
         //level.drawObjects();
     }
     
@@ -155,6 +160,20 @@ public class GameComposer {
         }  
     }
 
-  
+    
+    public void undo(){
+        if(undoCom != null){
+            undoCom.getFirst().undoCom();
+            doCom.push(undoCom.pop());
+        }
+        
+    }
+    
+    public void doCom(){
+        if(doCom != null){
+            doCom.getFirst().doCom();
+            undoCom.push(doCom.pop());
+        }
+    }
     
 }
