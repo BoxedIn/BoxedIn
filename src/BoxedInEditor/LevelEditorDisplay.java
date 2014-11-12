@@ -24,6 +24,7 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
     private Graphics editorGraphics;
     private int NUM_OF_BLOCKS;
     private int gridSpacing;
+    private int selectedObject = 1;     // variable stores a number representing the object selected from the toolbar
     Image currentImage;
 
     /**
@@ -52,10 +53,9 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
     
     public void paint(Graphics g){
         super.paint(g);
-        System.out.println("paint");
-        gc.drawLevel();
         drawGrid();
-        System.out.println("done");
+        gc.drawLevel();
+        
     }
     
 //    private void initializeImages(){
@@ -267,6 +267,7 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
         Point hotSpot = new Point(0,0);
         Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Square");
         setCursor(newCursor);
+        selectedObject = 1;     // 1 to represent square
     }                                            
 
     private void triangleButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
@@ -277,6 +278,7 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
         Point hotSpot = new Point(0,0);
         Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Triangle");
         setCursor(newCursor);
+        selectedObject = 2;     // 2 to represent triangle
     }                                              
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
@@ -287,12 +289,13 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
         Point hotSpot = new Point(0,0);
         Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Circle");
         setCursor(newCursor);
+        selectedObject = 3;     // 3 to represent circle
     }                                        
 
     private void jPanel4MouseClicked(java.awt.event.MouseEvent evt) {                                     
         // user clicks inside editorPanel        
         Point p = snapToGrid(evt.getX(), evt.getY());
-        gc.addNewObject(1, p);
+        gc.addNewObject(selectedObject, p);
         gc.drawLevel();
         //GameObject go = new GameObject(p, currentImage);
         //gc.level.addGameObject(go);
