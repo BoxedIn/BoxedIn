@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -34,6 +33,9 @@ public class GameComposer {
     FileInputStream fin; 
     ObjectInputStream ois; 
     Level level;
+    Image square = toolkit.getImage("box.gif");
+    Image triangle = toolkit.getImage("triangle.gif");
+    Image circle  = toolkit.getImage("circle.gif");
     
     public GameComposer(){
         editorDisplay = new LevelEditorDisplay(this);
@@ -42,16 +44,15 @@ public class GameComposer {
     }
     
     private void initImages(){
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        images[0] = toolkit.getImage("box.gif");
-        images[1] = toolkit.getImage("triangle.gif");
-        images[2] = toolkit.getImage("circle.gif");
         SquareObject.gOImage = toolkit.getImage("box.gif");
+        TriangleObject.gOImage = toolkit.getImage("triangle.gif");
+        CircleObject.gOImage = toolkit.getImage("circle.gif");
     }
     
     public void scaleImages(int gridSpacing){
-        Image i = toolkit.getImage("box.gif");
-        SquareObject.gOImage = i.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        SquareObject.gOImage = square.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        TriangleObject.gOImage = triangle.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        CircleObject.gOImage = circle.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
     }
     
     public void drawLevel(){
@@ -67,8 +68,19 @@ public class GameComposer {
     }
     
     public void addNewObject(int num, Point p){
-        SquareObject so = new SquareObject(p);
-        level.addGameObject(so);
+        GameObject o = null;
+        switch (num){
+            case 1: o = new SquareObject(p);
+                    break;
+            case 2: o = new TriangleObject(p);
+                    break;
+            case 3: o = new CircleObject(p);
+                    break;
+            default:
+                    break;
+        }
+        if(o != null){
+            level.addGameObject(o);}
         //level.drawObjects();
     }
     
