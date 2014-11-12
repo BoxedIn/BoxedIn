@@ -26,6 +26,5 @@ public class SquareObject extends GameObject{
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
             levelGraphics.drawImage(gOImage, x, y, null);
-            levelGraphics.drawLine(0, 0, 50,  50);
         }    
 }
