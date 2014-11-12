@@ -89,6 +89,10 @@ public class GameComposer {
         //level.drawObjects();
     }
     
+    public void removeObject(Point p){
+        level.removeGameObject(p);      // pass the point to the level to remove the object
+    }
+    
     public void saveLevel() throws IOException {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.showOpenDialog(editorDisplay);
