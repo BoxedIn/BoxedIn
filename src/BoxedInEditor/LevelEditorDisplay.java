@@ -22,48 +22,41 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
     private GameComposer gc;
     private JPanel editorPanel;
     private Graphics editorGraphics;
+    Toolkit toolkit = Toolkit.getDefaultToolkit();;
     private int NUM_OF_BLOCKS;
     private int gridSpacing;
-    private int selectedObject = 1;     // variable stores a number representing the object selected from the toolbar
+    private int selectedObject = 1;     //variable stores a number representing the object selected from the toolbar
     Image currentImage;
+    
 
     /**
      * Creates new form LevelEditorDisplay
      */
     public LevelEditorDisplay(GameComposer composer) {
         NUM_OF_BLOCKS = 20;
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        currentImage = toolkit.getImage("box.gif");
+        currentImage = ImageUtility.getBoxImage();
         initComponents();       // init frame componenets
+        hideLevelOrganizer();       // set default state to not visible
         gc = composer;
         editorPanel = jPanel4;
         editorGraphics = jPanel4.getGraphics();
         GameObject.levelGraphics = editorGraphics;
         gridSpacing = editorPanel.getWidth() / NUM_OF_BLOCKS;  // divide display panel in to 20 x 20 grid
-        gc.level.boxPixelHeight = gridSpacing; // setting static variable in Level
-        gc.level.boxPixelWidth = gridSpacing;
-        gc.level = new Level(NUM_OF_BLOCKS, NUM_OF_BLOCKS);
+        gc.currentLevel.boxPixelHeight = gridSpacing; // setting static variable in Level
+        gc.currentLevel.boxPixelWidth = gridSpacing;
+        gc.currentLevel = new Level(NUM_OF_BLOCKS, NUM_OF_BLOCKS);
         // must initialize a default image. also set cursor to box
         
-        
-        Point hotSpot = new Point(0,0);
-        Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Square");
-        setCursor(newCursor);
+        squareButtonActionPerformed(null);      // sets cursor to square
     }
     
+    @Override
     public void paint(Graphics g){
         super.paint(g);
         drawGrid();
         gc.drawLevel();
-        
     }
     
-//    private void initializeImages(){
-//        Toolkit toolkit = Toolkit.getDefaultToolkit();
-//        Image image = toolkit.getImage("box.gif");
-//        image = image.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-//        Point hotSpot = new Point(0,0);
-//    }
     
     private void drawGrid(){
         int width = editorPanel.getWidth();
@@ -84,11 +77,35 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
             gridSpacing = width / NUM_OF_BLOCKS;}  // divide display panel in to 20 x 20 grid
         else{
             gridSpacing = height / NUM_OF_BLOCKS;}  // divide display panel in to 20 x 20 grid
-        currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        //currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         Level.boxPixelHeight = gridSpacing; // reset static variables in Level
         Level.boxPixelWidth = gridSpacing;
         GameObject.levelGraphics = editorGraphics;  // set static graphics object in GameObject
-        gc.scaleImages(gridSpacing);
+        ImageUtility.scaleImages(gridSpacing);        // ***** this causes occasionaly NullPoitnerExceptions on startup and is the cause of the buggy drawing after resize ***
+    }
+    
+    public void updateLevelOrganizer(LinkedList<String> levelName){
+        levelOrganizer.removeAll();
+        for(String s: levelName){
+            levelOrganizer.add(s);
+        }
+    }
+    
+    private void updateCursor(){
+        //currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        Point hotSpot = new Point(12,12);
+        Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Cursor");
+        setCursor(newCursor);
+    }
+    
+    private void hideLevelOrganizer(){
+        jPanel5.setVisible(false);
+        this.setSize(new Dimension(this.getWidth() - 150, this.getHeight()));
+    }
+    
+    private void showLevelOrganizer(){
+        jPanel5.setVisible(true);
+        this.setSize(new Dimension(this.getWidth() + 150, this.getHeight()));
     }
     
     // adds a button to the object toolbar
