@@ -4,7 +4,6 @@
  */
 package BoxedInEditor;
 
-import java.awt.Image;
 import java.awt.Point;
 
 /**
@@ -12,7 +11,6 @@ import java.awt.Point;
  * @author azh5442
  */
 public class SquareObject extends GameObject{
-        public static Image gOImage;
 
         public SquareObject(Point p){
             location = p;
@@ -25,6 +23,6 @@ public class SquareObject extends GameObject{
         public void draw(){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            levelGraphics.drawImage(gOImage, x, y, null);
+            levelGraphics.drawImage(ImageUtility.getBoxImage(), x, y, null);
         }    
 }
