@@ -7,7 +7,6 @@
 package BoxedInEditor;
 
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Point;
 import java.io.Serializable;
 
