@@ -4,9 +4,7 @@
  */
 package BoxedInEditor;
 
-import java.awt.Image;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,51 +13,30 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.logging.Logger;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import java.util.LinkedList;
 
 /**
  *
  * @author tmb5577
  */
-public class GameComposer {
+public class GameComposer extends LevelManager{
     private LevelEditorDisplay editorDisplay;
     GameObject[] availableObjects = new GameObject[5];
-    Toolkit toolkit = Toolkit.getDefaultToolkit();
-    Image[] images = new Image[3];
-    FileOutputStream fout; 
-    ObjectOutputStream oos; 
     FileInputStream fin; 
     ObjectInputStream ois; 
-    Level level;
-    Image square = toolkit.getImage("box.gif");
-    Image triangle = toolkit.getImage("triangle.gif");
-    Image circle  = toolkit.getImage("circle.gif");
-    LinkedList <Command> undoCom = new LinkedList();
-    LinkedList <Command>  doCom = new LinkedList();
+    Game game = new Game();         // **** not sure if this follows with the design ***   
+    //Level level;      //  level has been moved to the levelManager class
+    LinkedList<Command> undoCom = new LinkedList(); 
+    LinkedList<Command>  doCom = new LinkedList(); 
+    int saveOrOpen = 0;
+
+
     public GameComposer(){
         editorDisplay = new LevelEditorDisplay(this);
         editorDisplay.setVisible(true);
-        initImages();
     }
     
-    private void initImages(){
-        SquareObject.gOImage = toolkit.getImage("box.gif");
-        TriangleObject.gOImage = toolkit.getImage("triangle.gif");
-        CircleObject.gOImage = toolkit.getImage("circle.gif");
-    }
-    
-    public void scaleImages(int gridSpacing){
-        SquareObject.gOImage = square.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-        TriangleObject.gOImage = triangle.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-        CircleObject.gOImage = circle.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-    }
-    
-    public void drawLevel(){
-        level.drawObjects();
-    }
     
     // this method may be used to dynamically add buttons to the toolbar in the editor
 //    private void createButton(){
@@ -69,43 +46,131 @@ public class GameComposer {
 //        editorDisplay.addButton(b);
 //    }
     
-    public void addNewObject(int num, Point p){
-        GameObject o = null;
-        switch (num){
-            case 1: o = new SquareObject(p);
-                    break;
-            case 2: o = new TriangleObject(p);
-                    break;
-            case 3: o = new CircleObject(p);
-                    break;
-            default:
-                    break;
+    public void canvasAction(int num, Point p){
+        if(num == 6){    // 6 is the current number for delete
+            removeObject(p);
+        }else{      // add the object
+            addNewObject(num, p);
         }
-        if(o != null){
-            level.addGameObject(o);
-            AddCommand a = new AddCommand(num, o.getLocation());
-            undoCom.push(a);
-        }
-        //level.drawObjects();
     }
     
-    public void removeObject(Point p){
-        level.removeGameObject(p);      // pass the point to the level to remove the object
+    private void addNewObject(int num, Point p){
+        AddCommand a = new AddCommand(currentLevel, num, p);  // create a command object to accomplish this task
+        if(a.doCom()){
+            undoCom.push(a);        // if the task did anything, push the task onto the stack to be undone
+        }
     }
     
-    public void saveLevel() throws IOException {
+    private void removeObject(Point p){ 
+        RemoveCommand r = new RemoveCommand(currentLevel, p);    // create a removecommand to carry out the remove obect task
+        if(r.doCom()){
+            undoCom.push(r);        // if the task did anything, push it onto the stack of tasks that can be undone
+        }
+    } 
+    
+    public void undo(){ 
+        if(undoCom != null){ 
+            undoCom.getFirst().undoCom(); 
+            doCom.push(undoCom.pop()); 
+        }         
+    } 
+    
+    public void doCom(){ 
+        if(doCom != null){ 
+            doCom.getFirst().doCom(); 
+            undoCom.push(doCom.pop()); 
+        } 
+    }
+    
+    public void addLevelToGame(){
+        File selectedFile = selectFile(saveOrOpen);
+        
+        try {
+            fin = new FileInputStream(selectedFile);
+            ois = new ObjectInputStream(fin);
+            Level inputLevel = readLevel(ois);
+            if(inputLevel.checkCompletion()){
+                // ******* hardcoded as true until i get the uptodate load with start and endpoints ************
+                String fileName = selectedFile.getName();
+                game.addLevel(currentLevel, fileName);
+                editorDisplay.updateLevelOrganizer(game.getLevelOrder());
+            }else{
+                System.out.println("This level is not complete!!!");
+            }
+        } catch (IOException ex) {
+            System.err.println(ex);
+        } catch (ClassNotFoundException ex) {
+            System.err.println(ex);
+        }
+    }
+    
+    public void removeLevelFromGame(int pos){
+        game.removeLevel(pos);
+        editorDisplay.updateLevelOrganizer(game.getLevelOrder());
+    }
+    
+    public void moveLevel(int init, int dest){
+        game.moveLevel(init, dest);
+        editorDisplay.updateLevelOrganizer(game.getLevelOrder());
+    }
+    
+    
+    public File selectFile(int soo){
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.showOpenDialog(editorDisplay);
+        
+        if(soo == 1){
+            fileChooser.showSaveDialog(editorDisplay);
+        }
+        else{
+            fileChooser.showOpenDialog(editorDisplay);
+        }
+        
         File fileName = fileChooser.getSelectedFile();
+        return fileName;
+    }
+    public void openLevel(){
+        File fileName = selectFile(saveOrOpen);
+        try {
+            fin = new FileInputStream(fileName);
+            ois = new ObjectInputStream(fin);
+            currentLevel = readLevel(ois);
+            ois.close();
+        } catch (IOException ex) {
+            System.err.println(ex);
+        } catch (ClassNotFoundException ex) {
+            System.err.println(ex);
+        }
+
+    }
+    
+    public void newLevel(int gridWidth, int gridHeight){
+        currentLevel = new Level(gridWidth, gridHeight);    // creates a new level with gridWidth x gridHeight blocks
+    }
+ 
+    public void saveLevel(){
+        saveOrOpen = 1;
+        File fileName = selectFile(saveOrOpen);
+        saveOrOpen = 0;
+        try {
+            FileOutputStream fout = new FileOutputStream(fileName);
+            ObjectOutputStream oos = new ObjectOutputStream(fout);            
+            exportLevel(fileName, oos, false);
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
+    }
+    
+    public void exportLevel(File fileName, ObjectOutputStream stream, boolean append) throws IOException {
+
+        
         ArrayList <SaveableGameObject> squares = new ArrayList();
         ArrayList <SaveableGameObject> triangles = new ArrayList();
+        ArrayList <SaveableGameObject> circles = new ArrayList();
+        SaveableGameObject startpoint = null;
+        SaveableGameObject endpoint = null;
+        
         try {
-            System.out.println("got in");
-            fout = new FileOutputStream(fileName);
-            System.out.println("pass fout");
-            oos = new ObjectOutputStream(fout);
-            System.out.println("pass oos");
-            GameObject[][] go = level.getGameObject();
+            GameObject[][] go = currentLevel.getGameObject();
             
             for(int i = 0; i< go.length; i++){
                 for(int j = 0; j < go[i].length; j++){
@@ -117,67 +182,53 @@ public class GameComposer {
                         SaveableGameObject sgo = new SaveableGameObject(go[i][j]);
                         triangles.add(sgo);
                     }
+                    if(go[i][j] instanceof CircleObject){
+                        SaveableGameObject sgo = new SaveableGameObject(go[i][j]);
+                        circles.add(sgo);
+                    }
+                    if(go[i][j] instanceof StartPoint){
+                        SaveableGameObject sgo = new SaveableGameObject(go[i][j]);
+                        startpoint = sgo;
+                    }
+                    if(go[i][j] instanceof EndPoint){
+                        SaveableGameObject sgo = new SaveableGameObject(go[i][j]);
+                        endpoint = sgo;
+                    }
                 }
             }
             
-            oos.writeObject(squares);
-            oos.writeObject(triangles);
-            System.out.println("pass oos = level.get");
-            oos.close();
-            System.out.println("saved successfully");
+            stream.writeObject(squares);
+            stream.writeObject(triangles);
+            stream.writeObject(circles);
+            stream.writeObject(startpoint);
+            stream.writeObject(endpoint);
+            System.out.println("level saved successfully");
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(GameComposer.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println(ex);
         }    
     }
     
-    public void openLevel() throws IOException, ClassNotFoundException{
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.showOpenDialog(editorDisplay);
-        File fileName = fileChooser.getSelectedFile();
-        ArrayList <SaveableGameObject> squares = new ArrayList();
-        ArrayList <SaveableGameObject> triangles = new ArrayList();
-        try {
-            System.out.println("got in");
-            fin = new FileInputStream(fileName);
-            System.out.println("pass fin");
-            ois = new ObjectInputStream(fin);
-            System.out.println("pass ois");
-            
-            
-            squares = (ArrayList <SaveableGameObject>) ois.readObject();
-            triangles = (ArrayList <SaveableGameObject>) ois.readObject();
-            level = new Level(20, 20);
-            
-            for(int i = 0; i < squares.size(); i++){
-                GameObject go = new SquareObject(squares.get(i));
-                level.addGameObject(go);
-            }
-            for(int i = 0; i < triangles.size(); i++){
-                GameObject go = new TriangleObject(triangles.get(i));
-                level.addGameObject(go);
-            }
-            
-            ois.close();
-            System.out.println("opened successfully");
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(GameComposer.class.getName()).log(Level.SEVERE, null, ex);
-        }  
-    }
 
     
-    public void undo(){
-        if(undoCom != null){
-            undoCom.getFirst().undoCom();
-            doCom.push(undoCom.pop());
+    public void buildGame(){
+        saveOrOpen = 1;
+        File fileName = selectFile(saveOrOpen);
+        saveOrOpen = 0;
+        FileOutputStream fout;
+        ObjectOutputStream oos;
+        Level tLevel = this.currentLevel;  // stores the current running level so we can restore after building game
+        try {
+             fout = new FileOutputStream(fileName);
+             oos = new ObjectOutputStream(fout); 
+            for(int i = 0; i<game.levels.size(); i++){
+                this.currentLevel = game.levels.get(i);    // saveLevel save this.level, so it must be set here
+                this.exportLevel(fileName, oos, true);
+            }
+            oos.close();
+            fout.close();
+        } catch (IOException ex) {
+            System.err.println(ex);
         }
-        
+        this.currentLevel = tLevel;    // reassign the original level to current level
     }
-    
-    public void doCom(){
-        if(doCom != null){
-            doCom.getFirst().doCom();
-            undoCom.push(doCom.pop());
-        }
-    }
-    
 }
