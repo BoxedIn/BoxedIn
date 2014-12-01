@@ -1,9 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package BoxedInEditor;
 
 import java.awt.Point;
@@ -16,27 +14,30 @@ public class RemoveCommand extends Command{
     private Level level;
     private Point p;
     private int object;
-    public RemoveCommand(int type, Point p){
+    GameObject go;
+    
+    public RemoveCommand(Level l, Point p){
+        level = l;
         this.p = p;
-        object = type;
+        go = null;
+                //********* this is wrong, we need to figure out a way to know which object was removed ******
     }
-    public void undoCom(){  
-        level.removeGameObject(p);       
-    }
-    public void doCom(){
-        GameObject o = null;
-        switch (object){
-            case 1: o = new SquareObject(p);
-                    break;
-            case 2: o = new TriangleObject(p);
-                    break;
-            case 3: o = new CircleObject(p);
-                    break;
-            default:
-                    break;
+    public boolean doCom(){  
+        boolean success = false;
+        if((go = level.removeGameObject(p)) != null){
+            success = true;
         }
-        if(o != null){
-            level.addGameObject(o);}
+        return success;
+    }
+    
+    public boolean undoCom(){
+        boolean success = false;
+        if(go != null){       
+            if(level.addGameObject(go)){
+                success = true;     // the object was successfully added
+            }
+        }
+        return success;
     }
 
 }
