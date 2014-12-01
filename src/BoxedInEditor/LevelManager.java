@@ -37,6 +37,10 @@ public abstract class LevelManager {
             return "its null";
     }
     
+    public int getLevelWidth(){
+        return currentLevel.getLevelWidth();
+    }
+    
     protected Level readLevel(ObjectInputStream ois) throws IOException, ClassNotFoundException {
 
         Level inputLevel = new Level(20, 20);
