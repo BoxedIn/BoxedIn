@@ -131,4 +131,12 @@ public class Level implements Serializable{
         else 
             return false;
     }
+    
+    public int getLevelWidth(){
+        return gridW;
+    }
+    
+    public int getLevelHeight(){
+        return gridH;
+    }
 }
