@@ -6,14 +6,13 @@
 
 package BoxedInEditor;
 
-import static BoxedInEditor.GameObject.levelGraphics;
 import java.awt.Point;
 
 /**
  *
  * @author andrew
  */
-public class CircleObject extends GameObject{
+public class CircleObject extends MoveableObject{
         
         public CircleObject(Point p){
             location = p;
@@ -26,6 +25,10 @@ public class CircleObject extends GameObject{
         public void draw(){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            levelGraphics.drawImage(ImageUtility.getTriangleImage(), x, y, null);
+            try {
+                ImageUtility.getGraphics().drawImage(ImageUtility.getTriangleImage(), x, y, null);
+            } catch (UninitializedGraphicsException ex) {
+                System.err.println(ex);
+            }
         } 
 }
