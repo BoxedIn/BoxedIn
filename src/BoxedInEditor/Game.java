@@ -61,4 +61,14 @@ public class Game {
         t = null;
     }
 
+    public Level nextLevel(){
+        currentLevel++;
+        if(currentLevel != this.levels.size()){
+            return levels.get(currentLevel);
+        }
+        else{
+            return null;
+        }
+    }
+    
 }
