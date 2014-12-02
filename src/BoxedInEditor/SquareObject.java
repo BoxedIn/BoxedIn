@@ -10,7 +10,7 @@ import java.awt.Point;
  *
  * @author azh5442
  */
-public class SquareObject extends GameObject{
+public class SquareObject extends NonmoveableObject{
 
         public SquareObject(Point p){
             location = p;
@@ -23,6 +23,10 @@ public class SquareObject extends GameObject{
         public void draw(){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            levelGraphics.drawImage(ImageUtility.getBoxImage(), x, y, null);
+            try {
+                ImageUtility.getGraphics().drawImage(ImageUtility.getBoxImage(), x, y, null);
+            } catch (UninitializedGraphicsException ex) {
+                System.err.println(ex);
+            }
         }    
 }
