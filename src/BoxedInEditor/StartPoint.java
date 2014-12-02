@@ -10,7 +10,7 @@ import java.awt.Point;
  *
  * @author tmb5577
  */
-public class StartPoint extends GameObject{
+public class StartPoint extends NonmoveableObject{
 
         public StartPoint(Point p){
             location = p;
@@ -23,7 +23,11 @@ public class StartPoint extends GameObject{
         public void draw(){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            levelGraphics.drawImage(ImageUtility.getStartPointImage(), x, y, null);
+            try {
+                ImageUtility.getGraphics().drawImage(ImageUtility.getStartPointImage(), x, y, null);
+            } catch (UninitializedGraphicsException ex) {
+                System.err.println(ex);
+            }
         } 
     
 }
