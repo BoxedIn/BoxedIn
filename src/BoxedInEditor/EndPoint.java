@@ -10,7 +10,7 @@ import java.awt.Point;
  *
  * @author tmb5577
  */
-public class EndPoint extends GameObject{
+public class EndPoint extends NonmoveableObject{
 
         public EndPoint(Point p){
             location = p;
@@ -23,7 +23,11 @@ public class EndPoint extends GameObject{
         public void draw(){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            levelGraphics.drawImage(ImageUtility.getEndPointImage(), x, y, null);
+            try {
+                ImageUtility.getGraphics().drawImage(ImageUtility.getEndPointImage(), x, y, null);
+            } catch (UninitializedGraphicsException ex) {
+                System.err.println(ex);
+            }
         } 
     
 }
