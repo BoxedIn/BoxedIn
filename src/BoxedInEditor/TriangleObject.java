@@ -4,15 +4,13 @@
  */
 package BoxedInEditor;
 
-import java.awt.Image;
 import java.awt.Point;
 
 /**
  *
  * @author tmb5577
  */
-public class TriangleObject extends GameObject{
-    public static Image gOImage;
+public class TriangleObject extends NonmoveableObject{
         
         public TriangleObject(Point p){
             location = p;
@@ -25,7 +23,11 @@ public class TriangleObject extends GameObject{
         public void draw(){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            levelGraphics.drawImage(gOImage, x, y, null);
+            try {
+                ImageUtility.getGraphics().drawImage(ImageUtility.getBoulderImage(), x, y, null);
+            } catch (UninitializedGraphicsException ex) {
+                System.err.println(ex);
+            }
         }  
     
 }
