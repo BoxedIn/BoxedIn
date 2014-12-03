@@ -73,7 +73,7 @@ public class Level implements Serializable{
         if((go[playerNewX][playerNewY] != null) && (go[playerNewX][playerNewY] instanceof MoveableObject)){// if there is an object in front of the player
                 System.out.println("this is moveable");
                 if(go[objectNewX][objectNewY] == null){
-                    System.out.println("nothing there");
+                    System.out.println("nothing in front of object");
                 }
                 go[objectNewX][objectNewY] = go[playerNewX][playerNewY];    // move object in front of player up one space
                 ((MoveableObject)go[objectNewX][objectNewY]).setX(objectNewX);     // set the moved objects x location to match its new spot
@@ -86,6 +86,12 @@ public class Level implements Serializable{
                 if(go[objectNewX][objectNewY] instanceof MoveableObject){
                     System.out.println("its been moved");
                 }
+        }else if(go[playerNewX][playerNewY] instanceof EndPoint){   // if the object in front of player is the end point
+            go[playerNewX][playerNewY] = null;      // remove the endPoint so the player can move there
+            go[playerNewX][playerNewY] = go[playerOldX][playerOldY];     // move player object to the endPoints position
+            go[playerOldX][playerOldY] = null;  // set players old spot to empty
+            player.setY(playerNewY);     // set player y position inside the object
+            player.setX(playerNewX);    // set player x position inside the object
         }else{
             System.out.println("nothing in front of me");
             go[playerNewX][playerNewY] = go[playerOldX][playerOldY];     // move player object in array from old position to new position
