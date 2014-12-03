@@ -18,7 +18,6 @@ public class Level implements Serializable{
     static java.util.logging.Level SEVERE;
     
     private GameObject go[][];
-    private int spotsTaken[][];
     private int gridW, gridH;       // number of blocks in width/height
     public static int boxPixelWidth, boxPixelHeight;
     private StartPoint start; //checks for start/end points since there can be only 1 of each
@@ -35,62 +34,64 @@ public class Level implements Serializable{
         gridW = gridWidth; // subtract 1 to account for zero indexed array
         gridH = gridHeight;  // subtract 1 to account for zero indexed array
         go = new GameObject[gridW][gridH];
-        spotsTaken = new int[gridW][gridH];
-        initSpotsTaken();
     }
     
     public void movePlayer(int d){
+        int playerOldX = player.getX();
+        int playerOldY = player.getY();
+        int playerNewX = player.getX();
+        int playerNewY = player.getY();
+        int objectNewX = player.getX();
+        int objectNewY = player.getY();
+        
         if(d == MOVE_UP){
-            if(go[player.getX()][player.getY() - 1] != null){// if there is an object in front of the player
-                go[player.getX()][player.getY() - 2] = go[player.getX()][player.getY() - 1];    // move object in front of player up one space
-                spotsTaken[player.getX()][player.getY() - 2] = 1;   // set the new spot as filled in the spots array
-                go[player.getX()][player.getY() + 1] = null;    // set player old position to null
-                spotsTaken[player.getX()][player.getY() + 1] = 0;   // set player old spot as empty in spots array
-            }else{
-                go[player.getX()][player.getY() - 1] = player; // move player up 1 position
-                spotsTaken[player.getX()][player.getY() - 2] = 1;   // set the new spot as filled in the spots array
-                player.setY(player.getY() - 1);     // subtract 1 from y position
-                go[player.getX()][player.getY() + 1] = null;    // set player old position to null
-                spotsTaken[player.getX()][player.getY() + 1] = 0;   // set player old spot as empty in spots array
-            }
+            System.out.println("move up");
+            playerNewX = playerOldX;
+            playerNewY = playerOldY - 1;
+            objectNewX = playerOldX;
+            objectNewY = playerOldY - 2;
         }else if(d == MOVE_RIGHT){
-            if(go[player.getX() + 1][player.getY()] != null){// if there is an object to the right of the player
-                go[player.getX() + 2][player.getY()] = go[player.getX() + 1][player.getY()];    // move object in front of player right one space
-                go[player.getX() - 1][player.getY()] = null;    // set player old position to null
-            }else{
-                go[player.getX() + 1][player.getY()] = player; // move player up 1 position
-                player.setX(player.getX() + 1);     // add 1 to x position
-                go[player.getX() - 1][player.getY()] = null;    // set player old position to null
-            }
+            System.out.println("move right");
+            playerNewX = playerOldX + 1;
+            playerNewY = playerOldY;
+            objectNewX = playerOldX + 2;
+            objectNewY = playerOldY;
         }else if(d == MOVE_DOWN){
-            if(go[player.getX()][player.getY() + 1] != null){// if there is an object below the player
-                go[player.getX()][player.getY() + 2] = go[player.getX()][player.getY() + 1];    // move object below the player down 1 space
-                go[player.getX()][player.getY() - 1] = null;    // set player old position to null
-            }else{
-                go[player.getX()][player.getY() + 1] = player; // move player down 1 position
-                player.setY(player.getY() +  1);     // add 1 to y position
-                go[player.getX()][player.getY() - 1] = null;    // set player old position to null
-            }
+            System.out.println("move down");
+            playerNewX = playerOldX;
+            playerNewY = playerOldY + 1;
+            objectNewX = playerOldX;
+            objectNewY = playerOldY + 2;
         }else if(d == MOVE_LEFT){
-            if(go[player.getX() - 1][player.getY()] != null){// if there is an object to the left of the player
-                go[player.getX() - 2][player.getY()] = go[player.getX() - 1][player.getY()];    // move object in front of player left one space
-                go[player.getX() + 1][player.getY()] = null;    // set player old position to null
-            }else{
-                go[player.getX() - 1][player.getY()] = player; // move player down 1 position
-                player.setX(player.getX() - 1);     // subtract 1 from x position
-                go[player.getX() + 1][player.getY()] = null;    // set player old position to null
-            }
-        }else{
-            // dont move
+            System.out.println("move left");
+            playerNewX = playerOldX - 1;
+            playerNewY = playerOldY;
+            objectNewX = playerOldX - 2;
+            objectNewY = playerOldY;
         }
-    }
-
-    
-    private void initSpotsTaken(){
-        for(int[] row: spotsTaken){ // iterate through rows
-            for(int column : row){  // iterate through columns
-                column = 0;         // set all equal to 0
-            }
+        
+        if((go[playerNewX][playerNewY] != null) && (go[playerNewX][playerNewY] instanceof MoveableObject)){// if there is an object in front of the player
+                System.out.println("this is moveable");
+                if(go[objectNewX][objectNewY] == null){
+                    System.out.println("nothing there");
+                }
+                go[objectNewX][objectNewY] = go[playerNewX][playerNewY];    // move object in front of player up one space
+                ((MoveableObject)go[objectNewX][objectNewY]).setX(objectNewX);     // set the moved objects x location to match its new spot
+                ((MoveableObject)go[objectNewX][objectNewY]).setY(objectNewY);     // set the moved objects y location to match its new spot
+                player.setX(playerNewX);    // set player x position inside the object
+                go[playerNewX][playerNewY] = go[playerOldX][playerOldY];     // move player object in array from old position to new position
+                go[playerOldX][playerOldY] = null;  // set players old spot to empty
+                player.setY(playerNewY);     // set player y position inside the object
+                player.setX(playerNewX);    // set player x position inside the object
+                if(go[objectNewX][objectNewY] instanceof MoveableObject){
+                    System.out.println("its been moved");
+                }
+        }else{
+            System.out.println("nothing in front of me");
+            go[playerNewX][playerNewY] = go[playerOldX][playerOldY];     // move player object in array from old position to new position
+            go[playerOldX][playerOldY] = null;  // set players old spot to empty
+            player.setY(playerNewY);     // set player y position inside the object
+            player.setX(playerNewX);    // set player x position inside the object
         }
     }
     
@@ -116,9 +117,8 @@ public class Level implements Serializable{
         boolean added = false;
     
         if(go.getLocation().x < gridW && go.getLocation().y < gridH && checkStartEndPoints(go)){
-           if(spotsTaken[go.getLocation().x][go.getLocation().y] == 0){     // check that no other objects occupy that point
+           if(this.go[go.getLocation().x][go.getLocation().y] == null){     // check that no other objects occupy that point
                this.go[go.getLocation().x][go.getLocation().y] = go;    // set this spot in the object array to object passed in
-               this.spotsTaken[go.getLocation().x][go.getLocation().y] = 1;     // could possibly equal some other int to represent another type of object
                added = true;
            }
         }
@@ -134,7 +134,6 @@ public class Level implements Serializable{
     public GameObject removeGameObject(Point p){
         GameObject g = null;
         if(p.getLocation().x < gridW && p.getLocation().y < gridH){     // if this point is within the grid
-            this.spotsTaken[p.getLocation().x][p.getLocation().y] = 0;    // mark this spot as empty
             g = go[p.getLocation().x][p.getLocation().y];
             
             if(this.go[p.getLocation().x][p.getLocation().y] instanceof StartPoint){
@@ -148,13 +147,7 @@ public class Level implements Serializable{
         }   // else point is point is not within the grid, do nothing
         return g;
     }
-    
-    public boolean checkGameObject(GameObject go){
-         for(int i = 0; i < this.go.length; i++){
-             //check to make sure that there isnt an object at that point
-         }
-         return true;
-    }
+   
     
     public GameObject[][] getGameObject(){
         return this.go;
