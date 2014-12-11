@@ -4,6 +4,7 @@
  */
 package BoxedInEditor;
 
+import java.awt.Graphics;
 import java.awt.Point;
 
 /**
@@ -15,19 +16,10 @@ public class StartPoint extends NonmoveableObject{
         public StartPoint(Point p){
             location = p;
         }
-        public StartPoint(SaveableGameObject sgo){
-            this.location = sgo.p;
-            this.setHeight(sgo.h);
-            this.setWidth(sgo.w);
-        }
-        public void draw(){
+        public void draw(Graphics g){
             int x = this.location.x*Level.boxPixelWidth;
             int y = this.location.y*Level.boxPixelHeight;
-            try {
-                ImageUtility.getGraphics().drawImage(ImageUtility.getStartPointImage(), x, y, null);
-            } catch (UninitializedGraphicsException ex) {
-                System.err.println(ex);
-            }
+            g.drawImage(ImageUtility.getStartPointImage(), x, y, null);
         } 
     
 }
