@@ -16,29 +16,30 @@ import java.util.LinkedList;
 public class Game {
     LinkedList<Level> levels = new LinkedList();
     LinkedList<String> levelNames = new LinkedList();
-    int currentLevel = 0;
-    
+    private int currentLevel = 0;
+    private String filePath;
     
     public void Game(){
     }
     
-    public void addLevel(Level l, String name){
+    public void addLevel(Level l){
         // add this element to end of list
         levels.add(l);
-        levelNames.add(name);
-        System.out.println(name);
+        levelNames.add(l.getLevelNameWithoutExt());
+        System.out.println(l.getLevelNameWithoutExt());
     }
     
     public Level getLevel(int i){
-        if(i > 0 && i <= levels.size()){
+        if(i < levels.size()){
             return levels.get(i);
         }else
             return null;
     }
     
-    public LinkedList<String> getLevelOrder(){   
-        for(String s: levelNames){
-            System.out.println(s);
+    public LinkedList<String> getLevelOrder(){  
+        // just debugging
+        for(Level l: levels){
+            System.out.println(l.getLevelNameWithoutExt());
         }
         return levelNames;
     }
@@ -62,13 +63,41 @@ public class Game {
     }
 
     public Level nextLevel(){
-        currentLevel++;
-        if(currentLevel != this.levels.size()){
-            return levels.get(currentLevel);
+        setCurrentLevel(getCurrentLevel() + 1);
+        if(getCurrentLevel() != this.levels.size()){
+            return levels.get(getCurrentLevel());
         }
         else{
             return null;
         }
+    }
+
+    /**
+     * @return the filePath
+     */
+    public String getFilePath() {
+        return filePath;
+    }
+
+    /**
+     * @param filePath the filePath to set
+     */
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    /**
+     * @return the currentLevel
+     */
+    public int getCurrentLevel() {
+        return currentLevel;
+    }
+
+    /**
+     * @param currentLevel the currentLevel to set
+     */
+    public void setCurrentLevel(int currentLevel) {
+        this.currentLevel = currentLevel;
     }
     
 }
