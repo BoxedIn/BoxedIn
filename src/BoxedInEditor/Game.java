@@ -16,7 +16,7 @@ import java.util.LinkedList;
 public class Game {
     LinkedList<Level> levels = new LinkedList();
     LinkedList<String> levelNames = new LinkedList();
-    private int currentLevel = 0;
+    int currentLevel = 0;
     private String filePath;
     
     public void Game(){
@@ -63,41 +63,21 @@ public class Game {
     }
 
     public Level nextLevel(){
-        setCurrentLevel(getCurrentLevel() + 1);
-        if(getCurrentLevel() != this.levels.size()){
-            return levels.get(getCurrentLevel());
+        currentLevel++;
+        if(currentLevel != this.levels.size()){
+            return levels.get(currentLevel);
         }
         else{
             return null;
         }
     }
 
-    /**
-     * @return the filePath
-     */
     public String getFilePath() {
         return filePath;
     }
 
-    /**
-     * @param filePath the filePath to set
-     */
     public void setFilePath(String filePath) {
         this.filePath = filePath;
-    }
-
-    /**
-     * @return the currentLevel
-     */
-    public int getCurrentLevel() {
-        return currentLevel;
-    }
-
-    /**
-     * @param currentLevel the currentLevel to set
-     */
-    public void setCurrentLevel(int currentLevel) {
-        this.currentLevel = currentLevel;
     }
     
 }
