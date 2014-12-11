@@ -1,11 +1,14 @@
 package BoxedInEditor;
 
 import java.awt.Graphics;
-import java.io.EOFException;
+import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
 
@@ -20,12 +23,11 @@ import javax.swing.JFileChooser;
  */
 public abstract class LevelManager {
     ImageUtility imageUtility = new ImageUtility();
-    protected Game g = new Game();
     protected Level currentLevel;
     protected FileInputStream fin;
     protected ObjectInputStream ois;
     private boolean saved = true;
-    protected int levelNumber;
+    protected Game game = new Game();
     
     public void drawLevel(Graphics g){
         if(currentLevel != null){  // only call draw if there is a level 
@@ -52,43 +54,35 @@ public abstract class LevelManager {
     protected Level readLevel(ObjectInputStream ois) throws IOException, ClassNotFoundException {
 
         Level inputLevel = new Level(20, 20);
-        ArrayList<BlockObject> blocks = new ArrayList();
-        ArrayList<WoodenBoxObject> woodenBlocks = new ArrayList();
-        ArrayList<BoulderObject> boulders = new ArrayList();
-        ArrayList<Water> water = new ArrayList();
-        StartPoint startpoint = null;
-        EndPoint endpoint = null;
+        ArrayList<BlockObject> squares = new ArrayList();
+        ArrayList<WoodenBoxObject> triangles = new ArrayList();
+        ArrayList<BoulderObject> circles = new ArrayList();
+        Point startpoint = null;
+        Point endpoint = null;
 
-        if (null != (blocks = (ArrayList<BlockObject>) ois.readObject())) {
-            woodenBlocks = (ArrayList<WoodenBoxObject>) ois.readObject();
-            boulders = (ArrayList<BoulderObject>) ois.readObject();
-            water = (ArrayList<Water>) ois.readObject();
-            startpoint = (StartPoint) ois.readObject();
-            endpoint = (EndPoint) ois.readObject();
-
-            
-            for (int i = 0; i < blocks.size(); i++) {
-                GameObject go = blocks.get(i);
+        if (null != (squares = (ArrayList<BlockObject>) ois.readObject())) {
+            triangles = (ArrayList<WoodenBoxObject>) ois.readObject();
+            circles = (ArrayList<BoulderObject>) ois.readObject();
+            startpoint = (Point) ois.readObject();
+            endpoint = (Point) ois.readObject();
+            for (int i = 0; i < squares.size(); i++) {
+                GameObject go = squares.get(i);
                 inputLevel.addGameObject(go);
             }
-            for (int i = 0; i < woodenBlocks.size(); i++) {
-                GameObject go = woodenBlocks.get(i);
+            for (int i = 0; i < triangles.size(); i++) {
+                GameObject go = triangles.get(i);
                 inputLevel.addGameObject(go);
             }
-            for (int i = 0; i < boulders.size(); i++) {
-                GameObject go = boulders.get(i);
-                inputLevel.addGameObject(go);
-            }
-            for (int i = 0; i < water.size(); i++) {
-                GameObject go = water.get(i);
+            for (int i = 0; i < circles.size(); i++) {
+                GameObject go = circles.get(i);
                 inputLevel.addGameObject(go);
             }
             if (startpoint != null) {
-                GameObject go1 = startpoint;
-                inputLevel.addGameObject(go1);
+                StartPoint s = new StartPoint(startpoint);
+                inputLevel.addGameObject(s);
             }
             if (endpoint != null) {
-                GameObject go2 = endpoint;
+                EndPoint go2 = new EndPoint(endpoint);
                 inputLevel.addGameObject(go2);
             }
 
@@ -139,54 +133,6 @@ public abstract class LevelManager {
         }
     }
     
-    public void loadGame(){
-        Level l;
-        File fileName = selectFile(0, null);
-        Player p;
-        levelNumber = 0;
-        
-        try {
-            fin = new FileInputStream(fileName);
-            ois = new ObjectInputStream(fin);
-        } catch (IOException ex) {
-            System.err.println(ex);
-        }
-        
-        int i = 0;
-        try{
-            while((l = readLevel(ois))!= null){
-                p = new Player(l.getStart().getLocation());
-                l.removeGameObject(l.getStart().getLocation());
-                l.addGameObject(p);
-                l.setPlayer(p);
-                g.addLevel(l);
-                i++;
-            }
-        }catch(ClassNotFoundException ex){
-            System.err.println(ex);
-        }catch(EOFException ex){
-            System.out.println("reached end of file");
-        }catch(IOException ex){
-            System.out.println(ex);
-        }
-        try { 
-            ois.close();
-        } catch (IOException ex) {
-            System.out.println(ex);
-        }
-        
-        Level temp = g.getLevel(0); // set level to level 0
-        if(temp != null){
-            setLevel(temp);     // set the currentLevel in the levelmanager to the first level
-            System.out.println("current level has been set");
-            for(int j = 0; j <= i; j++){
-                System.out.println(g.getLevel(j));
-            }
-        }else{
-            System.out.println("current level could not be set");
-        }
-    }
-    
     public boolean needsSaved(){
         // returns opposite of the saved state variable, saved should return false for needing to save
         return !saved;
@@ -201,4 +147,83 @@ public abstract class LevelManager {
     public void levelIsNotSaved(){
         saved = false;
     }
+    public void exportLevel(File fileName, ObjectOutputStream stream, boolean append) throws IOException {
+        ArrayList<GameObject> squares = new ArrayList();
+        ArrayList<GameObject> triangles = new ArrayList();
+        ArrayList<GameObject> circles = new ArrayList();
+        Point startpoint = null;
+        Point endpoint = null;
+        
+        try {
+            GameObject[][] go = currentLevel.getGameObject();
+            startpoint = currentLevel.getStart();
+            endpoint = currentLevel.getEnd();
+            for(int i = 0; i< go.length; i++){
+                for(int j = 0; j < go[i].length; j++){
+                    if(go[i][j] instanceof BlockObject){
+                        
+                        squares.add(go[i][j]);
+                    }
+                    if(go[i][j] instanceof WoodenBoxObject){
+                        triangles.add(go[i][j]);
+                    }
+                    if(go[i][j] instanceof BoulderObject){
+                        circles.add(go[i][j]);
+                    }
+
+                }
+            }
+
+            //stream.writeObject(game.getCurrentLevel());
+            stream.writeObject(squares);
+            stream.writeObject(triangles);
+            stream.writeObject(circles);
+            stream.writeObject(startpoint);
+            stream.writeObject(endpoint);
+            stream.writeObject(currentLevel.getLevelName());
+            stream.writeObject(currentLevel.getPath());
+            System.out.println("level saved successfully");
+            
+        } catch (FileNotFoundException ex) {
+            System.err.println(ex);
+        }    
+    }
+        
+    public void buildGame(){
+        System.out.println("Inside Build Game");
+        File fileName = selectFile(1, currentLevel.getPath());
+        if(fileName != null){   // if the user cancels building, filename will be null
+            FileOutputStream fout;
+            ObjectOutputStream oos;
+            for(int i = 0; i < game.levels.size(); i++){
+                System.out.println(game.levels.get(i).getLevelName());
+            }
+            Level tLevel = this.currentLevel;  // stores the current running level so we can restore after building game
+            try {
+                 fout = new FileOutputStream(fileName);
+                 oos = new ObjectOutputStream(fout); 
+                 oos.writeObject(game.getCurrentLevel());
+                for(int i = 0; i<game.levels.size(); i++){
+                    this.currentLevel = game.levels.get(i);    // saveLevel save this.level, so it must be set here
+                    this.exportLevel(fileName, oos, true);
+                }
+                
+                oos.close();
+                fout.close();
+            } catch (IOException ex) {
+                System.err.println(ex);
+            }
+            for(int i = 0; i < game.levels.size(); i++){
+                System.out.println(game.levels.get(i).getLevelName());
+            }
+        
+            this.currentLevel = tLevel;    // reassign the original level to current level
+        }else{
+                System.out.println("Build cancelled");
+        }
+    }   
+        
+        
+        
+        
 }
