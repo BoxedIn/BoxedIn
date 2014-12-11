@@ -6,6 +6,7 @@
 
 package BoxedInEditor;
 
+import java.awt.Graphics;
 import java.awt.Point;
 import java.io.Serializable;
 
@@ -18,7 +19,7 @@ public abstract class GameObject implements Serializable{
     protected Point location;
     //public static Graphics levelGraphics;
     
-    public abstract void draw();
+    public abstract void draw(Graphics g);
     
     /**
      * @return the width
