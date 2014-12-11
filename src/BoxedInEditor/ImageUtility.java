@@ -4,7 +4,6 @@
  */
 package BoxedInEditor;
 
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 
@@ -13,11 +12,10 @@ import java.awt.Toolkit;
  * @author azh5442
  */
 public final class ImageUtility {
-    private static Graphics levelGraphics;
     private static Toolkit toolkit = Toolkit.getDefaultToolkit();
-    private static Image boxImage;
+    private static Image blockImage;
     private static Image boulderImage;
-    private static Image triangleImage;
+    private static Image woodenBoxImage;
     private static Image deleteImage;
     private static Image startPointImage;
     private static Image endPointImage;
@@ -29,9 +27,9 @@ public final class ImageUtility {
     }
     
     private static void initImages(){
-        boxImage = toolkit.getImage("block.png");
+        blockImage = toolkit.getImage("block.png");
         boulderImage = toolkit.getImage("boulder.png");
-        triangleImage = toolkit.getImage("cage.jpg");
+        woodenBoxImage = toolkit.getImage("woodenBox.png");
         deleteImage = toolkit.getImage("remove.png");
         startPointImage = toolkit.getImage("start.png");
         endPointImage = toolkit.getImage("end.png");
@@ -39,12 +37,11 @@ public final class ImageUtility {
         playerImage = toolkit.getImage("cage.jpg");
     }
     
-    public static void scaleContent(Graphics g, int gridSpacing) {
-        levelGraphics = g;
+    public static void scaleContent(int gridSpacing) {
         initImages();
-        boxImage = boxImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        blockImage = blockImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         boulderImage = boulderImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-        triangleImage = triangleImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        woodenBoxImage = woodenBoxImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         deleteImage = deleteImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         startPointImage = startPointImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         endPointImage = endPointImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
@@ -52,27 +49,16 @@ public final class ImageUtility {
         playerImage = playerImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
     }
     
-    public static void setGraphics(Graphics g){
-        levelGraphics = g;
-    }
-    
-    public static Graphics getGraphics() throws UninitializedGraphicsException{
-        if(levelGraphics == null){
-            throw new UninitializedGraphicsException("The Graphics object you are tying to use has not been initialized");
-        }
-        return levelGraphics;
-    }
-    
-    public static Image getBoxImage(){
-        return boxImage;
+    public static Image getBlockImage(){
+        return blockImage;
     }
     
     public static Image getBoulderImage(){
         return boulderImage;
     }
     
-    public static Image getTriangleImage(){
-        return triangleImage;
+    public static Image getWoodenBoxImage(){
+        return woodenBoxImage;
     }
     
     public static Image getDeleteImage(){
