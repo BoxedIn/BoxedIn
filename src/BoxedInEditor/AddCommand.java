@@ -19,11 +19,11 @@ public class AddCommand extends Command{
         go = null;
         
         switch (type){
-            case 1: go = new SquareObject(p);
+            case 1: go = new BlockObject(p);
                     break;
-            case 2: go = new TriangleObject(p);
+            case 2: go = new BoulderObject(p);
                     break;
-            case 3: go = new CircleObject(p);
+            case 3: go = new WoodenBoxObject(p);
                     break;
             case 4: go = new StartPoint(p);
                     break;
