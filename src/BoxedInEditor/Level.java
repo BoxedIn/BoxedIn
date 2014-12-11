@@ -14,10 +14,7 @@ import java.io.Serializable;
  *
  * @author jds5782
  */
-public class Level implements Serializable{
-    // for opening a Level
-    static java.util.logging.Level SEVERE;
-    
+public class Level implements Serializable{  
     private GameObject go[][];
     private int gridW, gridH;       // number of blocks in width/height
     public static int boxPixelWidth, boxPixelHeight;
@@ -124,12 +121,6 @@ public class Level implements Serializable{
            if(this.go[go.getLocation().x][go.getLocation().y] == null){     // check that no other objects occupy that point
                this.go[go.getLocation().x][go.getLocation().y] = go;    // set this spot in the object array to object passed in
                added = true;
-               if(go instanceof StartPoint){
-                   start = new Point(go.getLocation());
-               }
-               else if(go instanceof EndPoint){
-                   end = new Point(go.getLocation());
-               }
            }
         }
         else if(go instanceof StartPoint){
