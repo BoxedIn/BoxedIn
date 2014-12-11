@@ -6,6 +6,7 @@
 
 package BoxedInEditor;
 
+import java.awt.Graphics;
 import java.awt.Point;
 import java.io.Serializable;
 
@@ -20,9 +21,10 @@ public class Level implements Serializable{
     private GameObject go[][];
     private int gridW, gridH;       // number of blocks in width/height
     public static int boxPixelWidth, boxPixelHeight;
-    private StartPoint start; //checks for start/end points since there can be only 1 of each
-    private EndPoint end;   //false indicates that they do not exist in level yet
-    String name;        //for later 
+    private Point start; //checks for start/end points since there can be only 1 of each
+    private Point end;   //false indicates that they do not exist in level yet
+    private String path;        // path to this levels file
+    private String name;        // filename with extension
     private Player player; //player object
     
     public static final int MOVE_UP = 1;
@@ -101,19 +103,15 @@ public class Level implements Serializable{
         }
     }
     
-    public void drawBackground(){
-        try {
-            ImageUtility.getGraphics().drawImage(ImageUtility.getBackgroundImage(), 0, 0, null);
-        } catch (UninitializedGraphicsException ex) {
-            System.err.println(ex);
-        }
+    public void drawBackground(Graphics g){
+        g.drawImage(ImageUtility.getBackgroundImage(), 0, 0, null);
     }
     
-    public void drawObjects(){
+    public void drawObjects(Graphics g){
         for (int i = 0; i < go.length; i++){
             for(int j = 0; j < go[i].length; j++){
                 if(go[i][j] != null){
-                    go[i][j].draw();
+                    go[i][j].draw(g);
                 }
             }
         }
@@ -126,6 +124,12 @@ public class Level implements Serializable{
            if(this.go[go.getLocation().x][go.getLocation().y] == null){     // check that no other objects occupy that point
                this.go[go.getLocation().x][go.getLocation().y] = go;    // set this spot in the object array to object passed in
                added = true;
+               if(go instanceof StartPoint){
+                   start = new Point(go.getLocation());
+               }
+               else if(go instanceof EndPoint){
+                   end = new Point(go.getLocation());
+               }
            }
         }
         else if(go instanceof StartPoint){
@@ -167,12 +171,14 @@ public class Level implements Serializable{
         if(go instanceof StartPoint || go instanceof EndPoint ){
             
             //no start points currently, ok to add
-            if(go instanceof StartPoint && start == null)
-                start = (StartPoint)go;
+            if(go instanceof StartPoint && start == null){
+                start = new Point((int)go.location.getX(), (int)go.location.getY());
+            }
             
             //no end points currently, ok to add
-            else if(go instanceof EndPoint && end == null)
-                end = (EndPoint)go;
+            else if(go instanceof EndPoint && end == null){
+                end = new Point((int)go.location.getX(), (int)go.location.getY());  // match end points
+            }
             
             //currently have a start/end point, not ok to add
             else
@@ -200,21 +206,21 @@ public class Level implements Serializable{
         return player;
     }
 
-    public EndPoint getEnd() {
+    public Point getEnd() {
         return end;
     }
 
     /**
      * @return the start
      */
-    public StartPoint getStart() {
+    public Point getStart() {
         return start;
     }
 
     /**
      * @param start the start to set
      */
-    public void setStart(StartPoint start) {
+    public void setStart(Point start) {
         this.start = start;
     }
 
@@ -223,5 +229,29 @@ public class Level implements Serializable{
      */
     public void setPlayer(Player player) {
         this.player = player;
+    }
+    
+    public String getPath(){
+        return path;
+    }
+    
+    public void setPath(String p){
+        path = p;
+    }
+    
+    public String getLevelName(){
+        return name;
+    }
+    
+    public String getLevelNameWithoutExt(){
+        int pos = name.lastIndexOf(".");
+        if (pos > 0) {
+            name = name.substring(0, pos);
+        }
+        return name;     // return filename without extension
+    }
+    
+    public void setLevelName(String n){
+        name = n;
     }
 }
