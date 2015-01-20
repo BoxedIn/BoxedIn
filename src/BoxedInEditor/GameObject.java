@@ -16,51 +16,31 @@ import java.io.Serializable;
  */
 public abstract class GameObject implements Serializable{
     private int width, height;
-    protected Point location;
-    //public static Graphics levelGraphics;
+    private Point location;
     
     public abstract void draw(Graphics g);
     
-    /**
-     * @return the width
-     */
     public int getWidth() {
         return width;
     }
 
-    /**
-     * @param width the width to set
-     */
     public void setWidth(int width) {
         this.width = width;
     }
 
-    /**
-     * @return the height
-     */
     public int getHeight() {
         return height;
     }
 
-    /**
-     * @param height the height to set
-     */
     public void setHeight(int height) {
         this.height = height;
     }
 
-    /**
-     * @return the location
-     */
     public Point getLocation() {
         return location;
     }
 
-    /**
-     * @param location the location to set
-     */
     public void setLocation(Point location) {
         this.location = location;
     }
-    
 }
