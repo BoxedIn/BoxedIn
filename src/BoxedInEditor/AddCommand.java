@@ -11,11 +11,9 @@ import java.awt.Point;
  * @author jds5782
  */
 public class AddCommand extends Command{
-    private Level level;
     private GameObject go;
     
-    public AddCommand(Level l, int type, Point p){
-        level = l;
+    public AddCommand(Point p, int type){
         go = null;
         
         switch (type){
@@ -27,14 +25,20 @@ public class AddCommand extends Command{
                     break;
             case 4: go = new StartPoint(p);
                     break;
-            case 5: go = new EndPoint (p);
+            case 5: go = new EndPoint(p);
                     break;
+            case 6: go = new Water(p);
+                    break;
+            case 7: {
+                    go = new TeleportPad(p);
+                    break;
+            }
             default:
                     break;
         }
     }
     
-    public boolean doCom(){
+    public boolean doCom(Level level){
         boolean success = false;
         if(go != null){
             if(level.addGameObject(go)){
@@ -44,7 +48,7 @@ public class AddCommand extends Command{
         return success;
     }
     
-    public boolean undoCom(){
+    public boolean undoCom(Level level){
         boolean success = false;
         if(level.removeGameObject(go.getLocation())!=null){
             success = true;
