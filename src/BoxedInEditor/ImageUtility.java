@@ -21,7 +21,10 @@ public final class ImageUtility {
     private static Image endPointImage;
     private static Image backgroundImage;
     private static Image playerImage;
-
+    private static Image waterImage;
+    private static Image boxedinImage;
+    private static Image padImage;
+    
     public ImageUtility(){
         initImages();
     }
@@ -34,11 +37,14 @@ public final class ImageUtility {
         startPointImage = toolkit.getImage("start.png");
         endPointImage = toolkit.getImage("end.png");
         backgroundImage = toolkit.getImage("dirt.png");
-        playerImage = toolkit.getImage("cage.jpg");
+        playerImage = toolkit.getImage("cage.png");
+        waterImage = toolkit.getImage("water.png");
+        boxedinImage = toolkit.getImage("boxedin.png");
+        padImage = toolkit.getImage("telepad.png");
     }
     
-    public static void scaleContent(int gridSpacing) {
-        initImages();
+    public static void scaleContent(int gridSpacing, int numOfBlocks) {
+        initImages();       // needed because images would lose resolution with resizing
         blockImage = blockImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         boulderImage = boulderImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         woodenBoxImage = woodenBoxImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
@@ -47,6 +53,8 @@ public final class ImageUtility {
         endPointImage = endPointImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
         backgroundImage = backgroundImage.getScaledInstance(20*gridSpacing, 20*gridSpacing, Image.SCALE_DEFAULT);
         playerImage = playerImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        waterImage = waterImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        padImage = padImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
     }
     
     public static Image getBlockImage(){
@@ -79,5 +87,17 @@ public final class ImageUtility {
     
     public static Image getPlayerImage(){
         return playerImage;
+    }
+    
+    public static Image getWaterImage(){
+        return waterImage;
+    }
+    
+    public static Image getBoxedinImage(){
+        return boxedinImage;
+    }
+
+    public static Image getPadImage() {
+        return padImage;
     }
 }
