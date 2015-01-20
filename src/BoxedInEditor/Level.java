@@ -9,6 +9,8 @@ package BoxedInEditor;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  *
@@ -23,6 +25,8 @@ public class Level implements Serializable{
     private String path;        // path to this levels file
     private String name;        // filename with extension
     private Player player; //player object
+    private int timeLimit = 0;
+    private LinkedList <TeleportPad> tp = new LinkedList();    
     
     public static final int MOVE_UP = 1;
     public static final int MOVE_RIGHT = 2;
@@ -42,6 +46,10 @@ public class Level implements Serializable{
         int playerNewY = player.getY();
         int objectNewX = player.getX();
         int objectNewY = player.getY();
+        
+        
+        //go[4][6] = ((Door)go[4][6]).flip();
+        //System.out.println(go[4][6].toString());
         
         if(d == MOVE_UP){
             System.out.println("move up");
@@ -68,7 +76,13 @@ public class Level implements Serializable{
             objectNewX = playerOldX - 2;
             objectNewY = playerOldY;
         }
-        
+        GameObject oldObject;
+        oldObject = player.getIo();
+        if(oldObject != null){
+            player.setIo(null);
+        }else{
+            System.out.println("its not null");
+        }
         if((go[playerNewX][playerNewY] != null) && (go[playerNewX][playerNewY] instanceof MoveableObject)){// if there is an object in front of the player
                 System.out.println("this is moveable");
                 if(go[objectNewX][objectNewY] == null){
@@ -79,7 +93,7 @@ public class Level implements Serializable{
                 ((MoveableObject)go[objectNewX][objectNewY]).setY(objectNewY);     // set the moved objects y location to match its new spot
                 player.setX(playerNewX);    // set player x position inside the object
                 go[playerNewX][playerNewY] = go[playerOldX][playerOldY];     // move player object in array from old position to new position
-                go[playerOldX][playerOldY] = null;  // set players old spot to empty
+                go[playerOldX][playerOldY] = oldObject;  // set players old spot to empty
                 player.setY(playerNewY);     // set player y position inside the object
                 player.setX(playerNewX);    // set player x position inside the object
                 if(go[objectNewX][objectNewY] instanceof MoveableObject){
@@ -91,13 +105,25 @@ public class Level implements Serializable{
             go[playerOldX][playerOldY] = null;  // set players old spot to empty
             player.setY(playerNewY);     // set player y position inside the object
             player.setX(playerNewX);    // set player x position inside the object
+        }else if(go[playerNewX][playerNewY] instanceof TeleportPad){
+            if(((TeleportPad)go[playerNewX][playerNewY]).getTeleTo() != null){
+                player.setIo(((TeleportPad)go[playerNewX][playerNewY]).getTeleTo());
+                player.setX(((TeleportPad)player.getIo()).getLocation().x);
+                player.setY(((TeleportPad)player.getIo()).getLocation().y);
+                go[player.getX()][player.getY()] = go[playerOldX][playerOldY];
+                go[playerOldX][playerOldY] = oldObject;
+            }
         }else{
             System.out.println("nothing in front of me");
             go[playerNewX][playerNewY] = go[playerOldX][playerOldY];     // move player object in array from old position to new position
-            go[playerOldX][playerOldY] = null;  // set players old spot to empty
+            go[playerOldX][playerOldY] = oldObject;  // set players old spot to empty
             player.setY(playerNewY);     // set player y position inside the object
             player.setX(playerNewX);    // set player x position inside the object
         }
+//        if(player.getIo() != null && ){
+//            go[playerOldX][playerOldY] = (TeleportPad) player.getIo();
+//            player.setIo(null);
+//        }
     }
     
     public void drawBackground(Graphics g){
@@ -117,10 +143,31 @@ public class Level implements Serializable{
     public boolean addGameObject(GameObject go){
         boolean added = false;
     
-        if(go.getLocation().x < gridW && go.getLocation().y < gridH && checkStartEndPoints(go)){
-           if(this.go[go.getLocation().x][go.getLocation().y] == null){     // check that no other objects occupy that point
+        if(go.getLocation().x < gridW && go.getLocation().y < gridH){
+           if(this.go[go.getLocation().x][go.getLocation().y] == null  && setStartEndPoints(go)){
+               // check that no other object occupies that point and if it is empyt, set the start or end point it necessary
                this.go[go.getLocation().x][go.getLocation().y] = go;    // set this spot in the object array to object passed in
                added = true;
+               if(go instanceof StartPoint || go instanceof Player){
+                   start = new Point(go.getLocation());
+               }
+               else if(go instanceof EndPoint){
+                   end = new Point(go.getLocation());
+               }
+               
+               if(go instanceof TeleportPad && tp.isEmpty()){
+                   tp.push((TeleportPad)go);
+                   System.out.println("TempTele is set");
+               }
+               else if(go instanceof TeleportPad &&  !tp.isEmpty()){
+                   
+                   TeleportPad tempTele = tp.pop();
+                   tempTele.setTeleTo((TeleportPad) go);
+                   
+                   ((TeleportPad) go).setTeleTo(tempTele);
+                   System.out.println("TelePad set");
+                   
+               }
            }
         }
         else if(go instanceof StartPoint){
@@ -136,26 +183,41 @@ public class Level implements Serializable{
         GameObject g = null;
         if(p.getLocation().x < gridW && p.getLocation().y < gridH){     // if this point is within the grid
             g = go[p.getLocation().x][p.getLocation().y];
+            if(go[p.getLocation().x][p.getLocation().y] instanceof TeleportPad){
+                if(((TeleportPad)g).getTeleTo() != null){
+                    tp.push(((TeleportPad)g).getTeleTo());
+                }
             
+            }
             if(this.go[p.getLocation().x][p.getLocation().y] instanceof StartPoint){
                 start = null;
             }
             if(this.go[p.getLocation().x][p.getLocation().y] instanceof EndPoint){
                 end = null;
             }
+          
             this.go[p.getLocation().x][p.getLocation().y] = null;     // remove this object from the array
             
         }   // else point is point is not within the grid, do nothing
         return g;
     }
-   
+  
     
     public GameObject[][] getGameObject(){
         return this.go;
     }
     
+    public void setGameObject(ArrayList <GameObject> g0){
+        for(int i = 0; i < g0.size(); i++){
+            
+            if(g0.get(i) != null){
+                go[g0.get(i).getLocation().x][g0.get(i).getLocation().y] = g0.get(i);
+            }
+        }
+    }
+    
     //check to make sure user doesn't add more than one start or end point
-    public boolean checkStartEndPoints(GameObject go){
+    public boolean setStartEndPoints(GameObject go){
         boolean ok = true;
      
         //check to see if go is a start/end point, if not then its ok to add go
@@ -163,12 +225,14 @@ public class Level implements Serializable{
             
             //no start points currently, ok to add
             if(go instanceof StartPoint && start == null){
-                start = new Point((int)go.location.getX(), (int)go.location.getY());
+                start = new Point((int)go.getLocation().getX(), (int)go.getLocation().getY());
+                System.out.println("placing start point");
             }
             
             //no end points currently, ok to add
             else if(go instanceof EndPoint && end == null){
-                end = new Point((int)go.location.getX(), (int)go.location.getY());  // match end points
+                end = new Point((int)go.getLocation().getX(), (int)go.getLocation().getY());  // match end points
+                System.out.println("placing end point");
             }
             
             //currently have a start/end point, not ok to add
@@ -178,12 +242,22 @@ public class Level implements Serializable{
         return ok;  
     }
     
-    public boolean checkCompletion(){
+    public void checkCompletion() throws IncompleteLevelException{
         // the minimum a level needs to be playable is a start and end point
-        if(start != null && end != null)
-            return true;
-        else 
-            return false;
+        boolean failed = false;
+        String warning = "Cannot add an incomplete level to the game!\n\n";
+        if(start == null || end == null){
+            warning += "Level does not contain both a Start and End point.\n";
+            failed = true;  // to throw exception
+        }
+//        if(timeLimit > 0 || timeLimit <= 600){
+//            warning += "Invalid level time limit.\n";
+//            failed = true;  // to throw exception
+//        }
+        
+        if(failed){
+            throw new IncompleteLevelException(warning);
+        }
     }
     
     public int getLevelWidth(){
@@ -201,23 +275,18 @@ public class Level implements Serializable{
         return end;
     }
 
-    /**
-     * @return the start
-     */
     public Point getStart() {
         return start;
     }
 
-    /**
-     * @param start the start to set
-     */
     public void setStart(Point start) {
         this.start = start;
     }
+    
+    public void setEnd(Point end){
+        this.end = end;
+    }
 
-    /**
-     * @param player the player to set
-     */
     public void setPlayer(Player player) {
         this.player = player;
     }
@@ -244,5 +313,19 @@ public class Level implements Serializable{
     
     public void setLevelName(String n){
         name = n;
+    }
+    
+    public void setTimeLimit(int seconds){
+        if(seconds >= 600){
+            timeLimit = 600;
+        }else if(seconds <= 0){
+            timeLimit = 0;
+        }else{
+            timeLimit = seconds;
+        }
+    }
+    
+    public int getTimeLimit(){
+        return timeLimit;
     }
 }
