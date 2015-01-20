@@ -16,11 +16,13 @@ import java.awt.Point;
 public class BoulderObject extends NonmoveableObject{
         
         public BoulderObject(Point p){
-            location = p;
+            setLocation(p);
         }
+        
+        @Override
         public void draw(Graphics g){
-            int x = this.location.x*Level.boxPixelWidth;
-            int y = this.location.y*Level.boxPixelHeight;
+            int x = this.getLocation().x*Level.boxPixelWidth;
+            int y = this.getLocation().y*Level.boxPixelHeight;
             g.drawImage(ImageUtility.getBoulderImage(), x, y, null);
         } 
 }
