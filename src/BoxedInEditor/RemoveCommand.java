@@ -11,18 +11,16 @@ import java.awt.Point;
  * @author jds5782
  */
 public class RemoveCommand extends Command{
-    private Level level;
     private Point p;
     private int object;
-    GameObject go;
+    private GameObject go;
     
-    public RemoveCommand(Level l, Point p){
-        level = l;
+    public RemoveCommand(Point p){
         this.p = p;
         go = null;
                 //********* this is wrong, we need to figure out a way to know which object was removed ******
     }
-    public boolean doCom(){  
+    public boolean doCom(Level level){  
         boolean success = false;
         if((go = level.removeGameObject(p)) != null){
             success = true;
@@ -30,7 +28,7 @@ public class RemoveCommand extends Command{
         return success;
     }
     
-    public boolean undoCom(){
+    public boolean undoCom(Level level){
         boolean success = false;
         if(go != null){       
             if(level.addGameObject(go)){
