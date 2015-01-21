@@ -14,22 +14,39 @@ import java.awt.Point;
  * @author jds5782
  */
 public class Player extends MoveableObject{
-
+    private InteractableObject io;
     public Player(Point p){
-            location = p;
+            setLocation(p);
     }
     
     public void draw(Graphics g) {   
-        int x = this.location.x*Level.boxPixelWidth;
-        int y = this.location.y*Level.boxPixelHeight;
+        int x = this.getLocation().x*Level.boxPixelWidth;
+        int y = this.getLocation().y*Level.boxPixelHeight;
         g.drawImage(ImageUtility.getPlayerImage(), x, y, null);
     }
     
     public int getX(){
-        return (int)location.getX();
+        return (int)getLocation().getX();
     }
     
     public int getY(){
-        return (int)location.getY();
+        return (int)getLocation().getY();
     }    
+
+    /**
+     * @return 
+     */
+    public GameObject getIo() {
+        if(io instanceof TeleportPad){
+            TeleportPad p = (TeleportPad) io;
+            return (TeleportPad) io;
+        }else{
+            return null;
+        }
+        //return io;
+    }
+
+    public void setIo(InteractableObject io) {
+        this.io = io;
+    }
 }
