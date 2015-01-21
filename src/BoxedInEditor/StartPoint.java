@@ -14,11 +14,11 @@ import java.awt.Point;
 public class StartPoint extends NonmoveableObject{
 
         public StartPoint(Point p){
-            location = p;
+            setLocation(p);
         }
         public void draw(Graphics g){
-            int x = this.location.x*Level.boxPixelWidth;
-            int y = this.location.y*Level.boxPixelHeight;
+            int x = this.getLocation().x*Level.boxPixelWidth;
+            int y = this.getLocation().y*Level.boxPixelHeight;
             g.drawImage(ImageUtility.getStartPointImage(), x, y, null);
         } 
     
