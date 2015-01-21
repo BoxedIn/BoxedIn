@@ -14,11 +14,11 @@ import java.awt.Point;
 public class WoodenBoxObject extends MoveableObject{
         
         public WoodenBoxObject(Point p){
-            location = p;
+            setLocation(p);
         }
         public void draw(Graphics g){
-            int x = this.location.x*Level.boxPixelWidth;
-            int y = this.location.y*Level.boxPixelHeight;
+            int x = this.getLocation().x*Level.boxPixelWidth;
+            int y = this.getLocation().y*Level.boxPixelHeight;
             g.drawImage(ImageUtility.getWoodenBoxImage(), x, y, null);
         }  
     
