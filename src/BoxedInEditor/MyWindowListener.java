@@ -17,11 +17,16 @@ import javax.swing.JOptionPane;
  */
 public class MyWindowListener extends WindowAdapter{
     private LevelManager parent;
-    private final String prompt = "Are you sure you want to exit?";
-    private final String title = "BoxedIn Editor";
+    private final String PROMPT = "Are you sure you want to exit?";
+    private String title = "";
     
     public MyWindowListener(LevelManager c){
         parent = c;
+        if(parent instanceof GameComposer){
+            title = "BoxedIn Editor";
+        }else if(parent instanceof BoxedInRunner){
+            title = "BoxedIn Runner";
+        }
     }
     
     @Override
@@ -29,7 +34,7 @@ public class MyWindowListener extends WindowAdapter{
     { 
         if(parent.needsSaved()){
             String ObjButtons[] = {"Save", "Close Without Saving"};
-            int promptResult = JOptionPane.showOptionDialog(null, prompt, title, 
+            int promptResult = JOptionPane.showOptionDialog(null, PROMPT, title, 
                 JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, 
                 ObjButtons,ObjButtons[0]);
             if(promptResult == 0)
@@ -37,7 +42,7 @@ public class MyWindowListener extends WindowAdapter{
                 if(parent instanceof GameComposer){
                         ((GameComposer)parent).saveLevel();
                 }else if(parent instanceof BoxedInRunner){
-                    //save game state
+                    ((BoxedInRunner)parent).saveGame();
                 }
             }
         }
