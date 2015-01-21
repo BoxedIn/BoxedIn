@@ -4,15 +4,16 @@
  */
 package BoxedInEditor;
 
+import BoxedInRunner.BoxedInRunner;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.io.IOException;
-import java.util.logging.Logger;
-import javax.swing.JButton;
-import javax.swing.JPanel;
+import java.util.LinkedList;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -20,68 +21,96 @@ import javax.swing.JPanel;
  */
 public class LevelEditorDisplay extends javax.swing.JFrame {
     private GameComposer gc;
-    private JPanel editorPanel;
     private Graphics editorGraphics;
-    Toolkit toolkit = Toolkit.getDefaultToolkit();;
-    private int NUM_OF_BLOCKS;
+    private Toolkit toolkit = Toolkit.getDefaultToolkit();
     private int gridSpacing;
     private int selectedObject = 1;     //variable stores a number representing the object selected from the toolbar
-    Image currentImage;
+    private Image currentImage;
     
-
     /**
      * Creates new form LevelEditorDisplay
      */
     public LevelEditorDisplay(GameComposer composer) {
-        NUM_OF_BLOCKS = 20;
-        currentImage = ImageUtility.getBoxImage();
+        currentImage = ImageUtility.getBlockImage();
         initComponents();       // init frame componenets
-        hideLevelOrganizer();       // set default state to not visible
+        setButtonImages();
+        //hideLevelOrganizer();       // set default state to not visible
         gc = composer;
-        editorPanel = jPanel4;
-        editorGraphics = jPanel4.getGraphics();
-        GameObject.levelGraphics = editorGraphics;
-        gridSpacing = editorPanel.getWidth() / NUM_OF_BLOCKS;  // divide display panel in to 20 x 20 grid
-        gc.currentLevel.boxPixelHeight = gridSpacing; // setting static variable in Level
-        gc.currentLevel.boxPixelWidth = gridSpacing;
-        gc.currentLevel = new Level(NUM_OF_BLOCKS, NUM_OF_BLOCKS);
+        this.addWindowListener(new MyWindowListener(gc));
+        editorGraphics = editorPanel.getGraphics();
+        gridSpacing = editorPanel.getWidth() / gc.getNumOfBlocks();  // divide display panel in to 20 x 20 grid
+        gc.getCurrentLevel().boxPixelHeight = gridSpacing; // setting static variable in Level
+        gc.getCurrentLevel().boxPixelWidth = gridSpacing;
+        gc.setCurrentLevel(new Level(gc.getNumOfBlocks(), gc.getNumOfBlocks()));
         // must initialize a default image. also set cursor to box
-        
-        squareButtonActionPerformed(null);      // sets cursor to square
+        refreshVariables();
+        blockButtonActionPerformed(null);      // sets cursor to square
+    }
+    
+    private void setButtonImages(){
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Image image = toolkit.getImage("new_file.png");
+        toolbarNewButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("open_file.png");
+        toolbarOpenButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("save_file.png");
+        toolbarSaveButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("undo.png");
+        toolbarUndoButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("redo.png");
+        toolbarRedoButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("block.png");
+        blockButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("boulder.png");
+        boulderButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("woodenBox.png");
+        woodenBoxButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("water.png");
+        waterButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("telepad.png");
+        teleportButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("start.png");
+        startPointButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("end.png");
+        endPointButton.setIcon(new ImageIcon(image));
+        image = toolkit.getImage("remove.png");
+        deleteButton.setIcon(new ImageIcon(image));
     }
     
     @Override
     public void paint(Graphics g){
         super.paint(g);
+        gc.drawBackground(editorGraphics);
+        gc.drawLevel(editorGraphics);
         drawGrid();
-        gc.drawLevel();
     }
     
     
     private void drawGrid(){
-        int width = editorPanel.getWidth();
-        int height = editorPanel.getHeight();
-        for(int i = 0; i <= NUM_OF_BLOCKS; i++){
-            editorGraphics.drawLine(i*gridSpacing, 0, i*gridSpacing, gridSpacing*NUM_OF_BLOCKS);   // vertical lines
-            editorGraphics.drawLine(0, i*gridSpacing, gridSpacing*NUM_OF_BLOCKS, i*gridSpacing); // horizontal lines
+        for(int i = 0; i <= gc.getNumOfBlocks(); i++){
+            editorGraphics.drawLine(i*gridSpacing, 0, i*gridSpacing, gridSpacing*gc.getNumOfBlocks());   // vertical lines
+            editorGraphics.drawLine(0, i*gridSpacing, gridSpacing*gc.getNumOfBlocks(), i*gridSpacing); // horizontal lines
         }
     }
     
     private void refreshVariables(){
-        editorPanel = jPanel4;  // update panel object
         editorGraphics = editorPanel.getGraphics(); // update graphics object
         // divide window into even blocks with the smallest dimension of the screen as reference
         int width = editorPanel.getWidth();
         int height = editorPanel.getHeight();
-        if(width < height){
-            gridSpacing = width / NUM_OF_BLOCKS;}  // divide display panel in to 20 x 20 grid
-        else{
-            gridSpacing = height / NUM_OF_BLOCKS;}  // divide display panel in to 20 x 20 grid
-        //currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
+        if(width < height && gc != null){
+            System.out.println(width);
+
+                gridSpacing = width / gc.getNumOfBlocks();
+            
+        }  // divide display panel in to 20 x 20 grid
+        else if(gc != null){
+            gridSpacing = height / gc.getNumOfBlocks();}  // divide display panel in to 20 x 20 grid
         Level.boxPixelHeight = gridSpacing; // reset static variables in Level
         Level.boxPixelWidth = gridSpacing;
-        GameObject.levelGraphics = editorGraphics;  // set static graphics object in GameObject
-        ImageUtility.scaleImages(gridSpacing);        // ***** this causes occasionaly NullPoitnerExceptions on startup and is the cause of the buggy drawing after resize ***
+        if(gc != null){
+            ImageUtility.scaleContent(gridSpacing, gc.getNumOfBlocks());        // ***** this causes occasionaly NullPoitnerExceptions on startup and is the cause of the buggy drawing after resize ***
+        }
     }
     
     public void updateLevelOrganizer(LinkedList<String> levelName){
@@ -91,11 +120,24 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
         }
     }
     
-    private void updateCursor(){
+    private void updateCursor(boolean on){
         //currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-        Point hotSpot = new Point(12,12);
-        Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Cursor");
-        setCursor(newCursor);
+        Point hotSpot = new Point(12, 12);
+        if(on){
+            if(currentImage != null){
+            Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Cursor");
+            setCursor(newCursor);
+            }
+        }else{
+            setCursor(DEFAULT_CURSOR);
+        }
+    }
+    
+    private Point snapToGrid(int x, int y){
+        int closestX = x / gridSpacing;
+        int closestY = y / gridSpacing;
+        Point p = new Point(closestX, closestY);
+        return p;
     }
     
     private void hideLevelOrganizer(){
@@ -108,141 +150,366 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
         this.setSize(new Dimension(this.getWidth() + 150, this.getHeight()));
     }
     
-    // adds a button to the object toolbar
-    public void addButton(JButton b){
-        jPanel3.add(b);
+    private void quitEditor(){
+        if(gc.needsSaved()){
+            gc.saveLevel();
+        }
+        System.exit(0); // quit the levelEditor program
     }
 
+    public int getTimeLimit(){
+        int time = 0;
+        if(!timeLimitBox.getText().equals("")){
+            time = Integer.parseInt(timeLimitBox.getText());
+        }
+        return time;
+    }
+    
+    public void updateTimeLimitBoxText(int time){
+        timeLimitBox.setText(Integer.toString(time));
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        toolbarNewButton = new javax.swing.JButton();
+        toolbarOpenButton = new javax.swing.JButton();
+        toolbarSaveButton = new javax.swing.JButton();
+        toolbarUndoButton = new javax.swing.JButton();
+        toolbarRedoButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
-        squareButton = new javax.swing.JButton();
-        triangleButton = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
+        blockButton = new javax.swing.JButton();
+        boulderButton = new javax.swing.JButton();
+        woodenBoxButton = new javax.swing.JButton();
+        waterButton = new javax.swing.JButton();
+        startPointButton = new javax.swing.JButton();
+        endPointButton = new javax.swing.JButton();
+        teleportButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        timeLimitBox = new javax.swing.JTextField();
+        editorPanel = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        levelOrganizer = new java.awt.List();
+        moveUpButton = new javax.swing.JButton();
+        moveDownButton = new javax.swing.JButton();
+        addLevelButton = new javax.swing.JButton();
+        removeLevelButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        fileDropdown = new javax.swing.JMenu();
         NewFile = new javax.swing.JMenuItem();
         OpenFile = new javax.swing.JMenuItem();
+        OpenGame = new javax.swing.JMenuItem();
         SaveFile = new javax.swing.JMenuItem();
         SaveFileAs = new javax.swing.JMenuItem();
-        CloseFile = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        Exit = new javax.swing.JMenuItem();
+        buildDropdown = new javax.swing.JMenu();
+        buildGame = new javax.swing.JMenuItem();
+        buildRun = new javax.swing.JMenuItem();
+        levelOrganizerRadioButton = new javax.swing.JRadioButtonMenuItem();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                formComponentResized(evt);
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
             }
         });
 
-        jPanel1.setPreferredSize(new java.awt.Dimension(400, 50));
-        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
-
-        jButton1.setIcon(new javax.swing.ImageIcon("P:\\SWENG_411\\FinalProject\\new_file.png")); // NOI18N
-        jButton1.setPreferredSize(new java.awt.Dimension(50, 63));
-        jPanel1.add(jButton1);
-
-        jButton2.setIcon(new javax.swing.ImageIcon("P:\\SWENG_411\\FinalProject\\open_file.png")); // NOI18N
-        jButton2.setPreferredSize(new java.awt.Dimension(50, 63));
+        jButton2.setText("jButton2");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton2);
 
-        jButton4.setIcon(new javax.swing.ImageIcon("P:\\SWENG_411\\FinalProject\\save.png")); // NOI18N
-        jButton4.setPreferredSize(new java.awt.Dimension(50, 63));
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setTitle("BoxedIn Editor");
+
+        jPanel1.setBackground(new java.awt.Color(114, 164, 210));
+        jPanel1.setPreferredSize(new java.awt.Dimension(400, 50));
+        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
+
+        toolbarNewButton.setPreferredSize(new java.awt.Dimension(50, 63));
+        toolbarNewButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                toolbarNewButtonActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton4);
+        jPanel1.add(toolbarNewButton);
+
+        toolbarOpenButton.setPreferredSize(new java.awt.Dimension(50, 63));
+        toolbarOpenButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolbarOpenButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(toolbarOpenButton);
+
+        toolbarSaveButton.setPreferredSize(new java.awt.Dimension(50, 63));
+        toolbarSaveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolbarSaveButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(toolbarSaveButton);
+
+        toolbarUndoButton.setMaximumSize(new java.awt.Dimension(50, 45));
+        toolbarUndoButton.setMinimumSize(new java.awt.Dimension(50, 45));
+        toolbarUndoButton.setPreferredSize(new java.awt.Dimension(50, 45));
+        toolbarUndoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolbarUndoButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(toolbarUndoButton);
+
+        toolbarRedoButton.setMaximumSize(new java.awt.Dimension(50, 45));
+        toolbarRedoButton.setMinimumSize(new java.awt.Dimension(50, 45));
+        toolbarRedoButton.setPreferredSize(new java.awt.Dimension(50, 45));
+        toolbarRedoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolbarRedoButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(toolbarRedoButton);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_START);
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setPreferredSize(new java.awt.Dimension(700, 471));
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
-        jPanel3.setBackground(new java.awt.Color(204, 255, 204));
-        jPanel3.setMaximumSize(new java.awt.Dimension(100, 32767));
+        jPanel3.setBackground(new java.awt.Color(114, 164, 210));
+        jPanel3.setMaximumSize(new java.awt.Dimension(80, 32767));
+        jPanel3.setMinimumSize(new java.awt.Dimension(80, 47));
         jPanel3.setPreferredSize(new java.awt.Dimension(80, 229));
 
-        squareButton.setText("Square");
-        squareButton.setPreferredSize(new java.awt.Dimension(70, 23));
-        squareButton.addActionListener(new java.awt.event.ActionListener() {
+        blockButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        blockButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                squareButtonActionPerformed(evt);
+                blockButtonActionPerformed(evt);
             }
         });
-        jPanel3.add(squareButton);
+        jPanel3.add(blockButton);
 
-        triangleButton.setText("Triangle");
-        triangleButton.setPreferredSize(new java.awt.Dimension(80, 23));
-        triangleButton.addActionListener(new java.awt.event.ActionListener() {
+        boulderButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        boulderButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                triangleButtonActionPerformed(evt);
+                boulderButtonActionPerformed(evt);
             }
         });
-        jPanel3.add(triangleButton);
+        jPanel3.add(boulderButton);
 
-        jButton3.setText("Circle");
-        jButton3.setPreferredSize(new java.awt.Dimension(70, 23));
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        woodenBoxButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        woodenBoxButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                woodenBoxButtonActionPerformed(evt);
             }
         });
-        jPanel3.add(jButton3);
+        jPanel3.add(woodenBoxButton);
+
+        waterButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        waterButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                waterButtonActionPerformed(evt);
+            }
+        });
+        jPanel3.add(waterButton);
+
+        startPointButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        startPointButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startPointButtonActionPerformed(evt);
+            }
+        });
+        jPanel3.add(startPointButton);
+
+        endPointButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        endPointButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                endPointButtonActionPerformed(evt);
+            }
+        });
+        jPanel3.add(endPointButton);
+
+        teleportButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        teleportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                teleportButtonActionPerformed(evt);
+            }
+        });
+        jPanel3.add(teleportButton);
+
+        deleteButton.setPreferredSize(new java.awt.Dimension(35, 35));
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+        jPanel3.add(deleteButton);
+
+        jLabel1.setText("Time Limit");
+        jPanel3.add(jLabel1);
+
+        timeLimitBox.setPreferredSize(new java.awt.Dimension(50, 20));
+        jPanel3.add(timeLimitBox);
 
         jPanel2.add(jPanel3);
 
-        jPanel4.setBackground(new java.awt.Color(153, 204, 255));
-        jPanel4.addMouseListener(new java.awt.event.MouseAdapter() {
+        editorPanel.setBackground(new java.awt.Color(114, 164, 210));
+        editorPanel.setPreferredSize(new java.awt.Dimension(470, 229));
+        editorPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jPanel4MouseClicked(evt);
+                editorPanelMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                editorPanelMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                editorPanelMouseExited(evt);
+            }
+        });
+        editorPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                editorPanelComponentResized(evt);
             }
         });
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 510, Short.MAX_VALUE)
+        javax.swing.GroupLayout editorPanelLayout = new javax.swing.GroupLayout(editorPanel);
+        editorPanel.setLayout(editorPanelLayout);
+        editorPanelLayout.setHorizontalGroup(
+            editorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 361, Short.MAX_VALUE)
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        editorPanelLayout.setVerticalGroup(
+            editorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 469, Short.MAX_VALUE)
         );
 
-        jPanel2.add(jPanel4);
+        jPanel2.add(editorPanel);
+
+        jPanel5.setBackground(new java.awt.Color(114, 164, 210));
+        jPanel5.setMaximumSize(new java.awt.Dimension(150, 32767));
+        jPanel5.setMinimumSize(new java.awt.Dimension(150, 100));
+        jPanel5.setPreferredSize(new java.awt.Dimension(150, 227));
+
+        moveUpButton.setText("Move Up");
+        moveUpButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveUpButtonActionPerformed(evt);
+            }
+        });
+
+        moveDownButton.setText("Move Down");
+        moveDownButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveDownButtonActionPerformed(evt);
+            }
+        });
+
+        addLevelButton.setText("Add Level");
+        addLevelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addLevelButtonActionPerformed(evt);
+            }
+        });
+
+        removeLevelButton.setText("Remove Level");
+        removeLevelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeLevelButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Level Organizer");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(moveDownButton)
+                            .addComponent(moveUpButton)
+                            .addComponent(addLevelButton)
+                            .addComponent(removeLevelButton))
+                        .addContainerGap(39, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(levelOrganizer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(39, 39, 39))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addComponent(jLabel2)
+                .addGap(38, 38, 38)
+                .addComponent(levelOrganizer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(41, 41, 41)
+                .addComponent(moveUpButton)
+                .addGap(31, 31, 31)
+                .addComponent(moveDownButton)
+                .addGap(42, 42, 42)
+                .addComponent(addLevelButton)
+                .addGap(32, 32, 32)
+                .addComponent(removeLevelButton)
+                .addContainerGap(99, Short.MAX_VALUE))
+        );
+
+        jPanel2.add(jPanel5);
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
 
-        jMenu1.setText("File");
+        fileDropdown.setText("File");
 
         NewFile.setText("New File");
-        jMenu1.add(NewFile);
+        NewFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NewFileActionPerformed(evt);
+            }
+        });
+        fileDropdown.add(NewFile);
 
         OpenFile.setText("OpenFile");
-        jMenu1.add(OpenFile);
+        OpenFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpenFileActionPerformed(evt);
+            }
+        });
+        fileDropdown.add(OpenFile);
+
+        OpenGame.setText("OpenGame");
+        OpenGame.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpenGameActionPerformed(evt);
+            }
+        });
+        fileDropdown.add(OpenGame);
 
         SaveFile.setText("Save");
-        jMenu1.add(SaveFile);
+        SaveFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SaveFileActionPerformed(evt);
+            }
+        });
+        fileDropdown.add(SaveFile);
 
         SaveFileAs.setText("SaveAs");
         SaveFileAs.addActionListener(new java.awt.event.ActionListener() {
@@ -250,123 +517,314 @@ public class LevelEditorDisplay extends javax.swing.JFrame {
                 SaveFileAsActionPerformed(evt);
             }
         });
-        jMenu1.add(SaveFileAs);
+        fileDropdown.add(SaveFileAs);
 
-        CloseFile.setText("Close File");
-        jMenu1.add(CloseFile);
+        Exit.setText("Exit");
+        Exit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ExitActionPerformed(evt);
+            }
+        });
+        fileDropdown.add(Exit);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar1.add(fileDropdown);
 
-        jMenu2.setText("Edit");
-        jMenuBar1.add(jMenu2);
+        buildDropdown.setText("Build");
+
+        buildGame.setText("Build");
+        buildGame.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buildGameActionPerformed(evt);
+            }
+        });
+        buildDropdown.add(buildGame);
+
+        buildRun.setText("Build and Run");
+        buildRun.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buildRunActionPerformed(evt);
+            }
+        });
+        buildDropdown.add(buildRun);
+
+        levelOrganizerRadioButton.setSelected(true);
+        levelOrganizerRadioButton.setText("Level Organizer");
+        levelOrganizerRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                levelOrganizerRadioButtonActionPerformed(evt);
+            }
+        });
+        buildDropdown.add(levelOrganizerRadioButton);
+
+        jMenuBar1.add(buildDropdown);
 
         setJMenuBar(jMenuBar1);
 
         pack();
-    }// </editor-fold>
+    }// </editor-fold>                        
 
-    private void SaveFileAsActionPerformed(java.awt.event.ActionEvent evt) {                                           
-        // TODO add your handling code here:
-    }                                          
-
-    private void formComponentResized(java.awt.event.ComponentEvent evt) {                                      
-        // window is resized
-        refreshVariables();
-//        initializeImages();
-        repaint();
-    }                                     
-
-    private void squareButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
+    private void blockButtonActionPerformed(java.awt.event.ActionEvent evt) {                                            
         // user presses square button
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        currentImage = toolkit.getImage("box.gif");
-        currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-        Point hotSpot = new Point(0,0);
-        Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Square");
-        setCursor(newCursor);
-        selectedObject = 1;     // 1 to represent square
-    }                                            
+        currentImage = ImageUtility.getBlockImage();
+        selectedObject = 1;     //to represent square
+    }                                           
 
-    private void triangleButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
+    private void boulderButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
         // user presses triangle button
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        currentImage = toolkit.getImage("triangle.gif");
-        currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-        Point hotSpot = new Point(0,0);
-        Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Triangle");
-        setCursor(newCursor);
-        selectedObject = 2;     // 2 to represent triangle
+        currentImage = ImageUtility.getBoulderImage();
+        selectedObject = 2;     //to represent triangle
+    }                                             
+
+    private void woodenBoxButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                
+        // user presses circle button
+        currentImage = ImageUtility.getWoodenBoxImage();
+        selectedObject = 3;     //to represent circle
+    }                                               
+
+    private void editorPanelMouseClicked(java.awt.event.MouseEvent evt) {                                         
+        // user clicks inside editorPanel
+        Point p = snapToGrid(evt.getX(), evt.getY());
+        gc.canvasAction(selectedObject, p);
+        repaint();
+    }                                        
+
+    private void toolbarSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                  
+        // toolbar save button
+        gc.saveLevelAs();
+    }                                                 
+
+    private void toolbarOpenButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                  
+        // toolbar open button
+        try{
+            gc.openLevel();
+        }catch(ClassCastException ex){
+            System.err.println("incompatable filetype selected");
+            JOptionPane.showMessageDialog(this, "Incompatible filetype was selected");
+        }
+        repaint();
+    }                                                 
+
+    private void startPointButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
+        // user selects the startPoint tool
+        currentImage = ImageUtility.getStartPointImage();
+        selectedObject = 4;     //to represent start point
+    }                                                
+
+    private void endPointButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        // user selects the endPoint tool
+        currentImage = ImageUtility.getEndPointImage();
+        selectedObject = 5;     //to represent end point
     }                                              
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        // user presses circle button
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        currentImage = toolkit.getImage("circle.gif");
-        currentImage = currentImage.getScaledInstance(gridSpacing, gridSpacing, Image.SCALE_DEFAULT);
-        Point hotSpot = new Point(0,0);
-        Cursor newCursor = toolkit.createCustomCursor(currentImage, hotSpot, "Circle");
-        setCursor(newCursor);
-        selectedObject = 3;     // 3 to represent circle
+    private void toolbarNewButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
+        // toolbar new level button pressed
+        // might want to prompt a message to ask them if they want to save any unfinished work or else data will be lost
+        gc.newLevel(gridSpacing, gridSpacing);      // create new level
+        repaint();
+    }                                                
+
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
+        // toolbar delete button
+        currentImage = ImageUtility.getDeleteImage();
+        selectedObject = 9;     //to represent delete 
+    }                                            
+
+    private void addLevelButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        // Game organizer add level button
+        gc.addLevelToGame();
+        updateLevelOrganizer(gc.getLevelOrder());
+    }                                              
+
+    private void removeLevelButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                  
+        // levelOrganizer remove level button
+        if(levelOrganizer.getSelectedIndex() > 0){
+            gc.removeLevelFromGame(levelOrganizer.getSelectedIndex());
+        }
+    }                                                 
+
+    private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
+        // levelOrganizer move up button
+        int pos = levelOrganizer.getSelectedIndex();
+        if(pos > 0){            // only if this isnt the first element in the list
+            gc.moveLevel(pos, pos - 1);
+            levelOrganizer.select(pos - 1);         // sets the selection to the items new position
+        }
+    }                                            
+
+    private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        // levelOrganizer move down button
+        int pos = levelOrganizer.getSelectedIndex();
+        if(pos >= 0 && pos < (levelOrganizer.getItemCount()) - 1){        // only if this isnt the last element in the list
+            gc.moveLevel(pos, pos + 1);
+            levelOrganizer.select(pos + 1);         // sets the selection to the items new position
+        }
+    }                                              
+
+    private void levelOrganizerRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                          
+        // levelOrganizer checkbox in build menu clicked
+        if(levelOrganizerRadioButton.isSelected()){
+            showLevelOrganizer();
+        }else{
+            hideLevelOrganizer();
+        }
+    }                                                         
+
+    private void toolbarUndoButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                  
+        // toolbar undo button pressed
+        gc.undo();
+        repaint();
+    }                                                 
+
+    private void toolbarRedoButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                  
+        // toolbar redo button pressed
+        gc.doCom();
+        repaint();
+    }                                                 
+
+    private void buildGameActionPerformed(java.awt.event.ActionEvent evt) {                                          
+        // menu bar build pressed
+        int result = gc.buildGame();
+        if(result == 0){
+            JOptionPane.showMessageDialog(this, "Build Successful");
+        }else if(result == 1){
+            JOptionPane.showMessageDialog(this, "Failed to build game");
+        }else if(result == 2){
+            JOptionPane.showMessageDialog(this, "Failed to build game\nGame contains no levels");
+        }
+    }                                         
+
+    private void NewFileActionPerformed(java.awt.event.ActionEvent evt) {                                        
+        // toolbar new file button pressed
+        gc.newLevel(gridSpacing, gridSpacing);      // create new level
+        repaint();
+    }                                       
+
+    private void OpenFileActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // toolbar open file button pressed
+        try{
+            gc.openLevel();
+        }catch(ClassCastException ex){
+            System.err.println("incompatable filetype selected");
+            JOptionPane.showMessageDialog(this, "Incompatible filetype was selected");
+        }
+        repaint();
     }                                        
 
-    private void jPanel4MouseClicked(java.awt.event.MouseEvent evt) {                                     
-        // user clicks inside editorPanel        
-        Point p = snapToGrid(evt.getX(), evt.getY());
-        gc.addNewObject(selectedObject, p);
-        gc.drawLevel();
-        //GameObject go = new GameObject(p, currentImage);
-        //gc.level.addGameObject(go);
-        //gc.level.drawObjects();
+    private void SaveFileActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // file menu save button, NOT SaveAS
+        gc.saveLevel();
+    }                                        
+
+    private void SaveFileAsActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        // file menu save button
+        gc.saveLevelAs();
+    }                                          
+
+    private void ExitActionPerformed(java.awt.event.ActionEvent evt) {                                     
+        // file menu exit button pressed
+        quitEditor();
     }                                    
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        // toolbar save button
-        try {
-            gc.saveLevel();
-        } catch (IOException ex) {
-            Logger.getLogger(LevelEditorDisplay.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }        
+    private void editorPanelMouseEntered(java.awt.event.MouseEvent evt) {                                         
+        // mouse entered level panel
+        updateCursor(true);
     }                                        
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        // toolbar open button
-        try {
-            gc.openLevel();
-        } catch (IOException ex) {
-            Logger.getLogger(LevelEditorDisplay.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(LevelEditorDisplay.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    private void editorPanelMouseExited(java.awt.event.MouseEvent evt) {                                        
+        // mouse exited level panel
+        updateCursor(false);
+    }                                       
+
+    private void buildRunActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // build menu build and run item
+        int result = gc.buildGame();
+        if(result == 0){
+            JOptionPane.showMessageDialog(this, "Build Successful");
+            BoxedInRunner br = new BoxedInRunner();
+        }else if(result == 1){
+            JOptionPane.showMessageDialog(this, "Failed to build game");
+        }else if(result == 2){
+            JOptionPane.showMessageDialog(this, "Failed to build game\nGame contains no levels");
         }
     }                                        
 
-    private Point snapToGrid(int x, int y){
-        int closestX = x / gridSpacing;
-        int closestY = y / gridSpacing;
-        Point p = new Point(closestX, closestY);
-        return p;
-    }
+    private void waterButtonActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        // user presses water button
+        currentImage = ImageUtility.getWaterImage();
+        selectedObject = 6;     //to represent water
+    }                                           
+
+    private void OpenGameActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // file menu open game button
+        gc.openGame();
+    }                                        
+
+    private void editorPanelComponentResized(java.awt.event.ComponentEvent evt) {                                             
+        // editor panel is resized
+        refreshVariables();
+        repaint();
+        
+    }                                            
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+      
+        
+    }                                        
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+    
+    }                                        
+
+    private void teleportButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        // teleport pad button pressed
+        currentImage = ImageUtility.getPadImage();
+        selectedObject = 7;
+    }                                              
+
     /**
      * @param args the command line arguments
      */
     
-    // Variables declaration - do not modify
-    private javax.swing.JMenuItem CloseFile;
+    // Variables declaration - do not modify                     
+    private javax.swing.JMenuItem Exit;
     private javax.swing.JMenuItem NewFile;
     private javax.swing.JMenuItem OpenFile;
+    private javax.swing.JMenuItem OpenGame;
     private javax.swing.JMenuItem SaveFile;
     private javax.swing.JMenuItem SaveFileAs;
+    private javax.swing.JButton addLevelButton;
+    private javax.swing.JButton blockButton;
+    private javax.swing.JButton boulderButton;
+    private javax.swing.JMenu buildDropdown;
+    private javax.swing.JMenuItem buildGame;
+    private javax.swing.JMenuItem buildRun;
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JPanel editorPanel;
+    private javax.swing.JButton endPointButton;
+    private javax.swing.JMenu fileDropdown;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JButton squareButton;
-    private javax.swing.JButton triangleButton;
-    // End of variables declaration
+    private javax.swing.JPanel jPanel5;
+    private java.awt.List levelOrganizer;
+    private javax.swing.JRadioButtonMenuItem levelOrganizerRadioButton;
+    private javax.swing.JButton moveDownButton;
+    private javax.swing.JButton moveUpButton;
+    private javax.swing.JButton removeLevelButton;
+    private javax.swing.JButton startPointButton;
+    private javax.swing.JButton teleportButton;
+    private javax.swing.JTextField timeLimitBox;
+    private javax.swing.JButton toolbarNewButton;
+    private javax.swing.JButton toolbarOpenButton;
+    private javax.swing.JButton toolbarRedoButton;
+    private javax.swing.JButton toolbarSaveButton;
+    private javax.swing.JButton toolbarUndoButton;
+    private javax.swing.JButton waterButton;
+    private javax.swing.JButton woodenBoxButton;
+    // End of variables declaration                   
 }
